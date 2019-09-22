@@ -3,6 +3,8 @@ package com.example.flickerimagegallery.presentation.gallery
 import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.flickerimagegallery.R
 import com.example.flickerimagegallery.data.entities.Item
@@ -11,6 +13,7 @@ import com.example.flickerimagegallery.presentation.gallery.viewLists.GalleryCon
 import com.example.flickerimagegallery.presentation.gallery.viewLists.GalleryItemsAdapter
 import com.example.flickerimagegallery.presentation.gallery.viewLists.GalleryItemsAdapter.*
 import kotlinx.android.synthetic.main.activity_gallery.*
+
 
 interface GalleryView {
     fun notifyDataSetChanged()
@@ -25,7 +28,7 @@ class GalleryActivity : AppCompatActivity(), GalleryView {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_gallery)
         presenter = GalleryPresenterImpl(GetFlickerPublicInfo(applicationContext))
-        galleryView.layoutManager = GridLayoutManager(this, 3)
+        galleryView.layoutManager = GridLayoutManager(this, 2)
         galleryView.adapter = initGalleryAdapter()
         floatingActionButton.setOnClickListener { presenter.onReloadClick() }
     }
@@ -38,6 +41,19 @@ class GalleryActivity : AppCompatActivity(), GalleryView {
     override fun onDestroy() {
         super.onDestroy()
         presenter.dropView()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.gallery_option_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.sortByPublished -> presenter.onClickSortByPublished()
+            R.id.sortByDateTaken -> presenter.onClickSortByDateTaken()
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     override fun notifyDataSetChanged() {

@@ -16,6 +16,8 @@ interface GalleryPresenter {
     )
 
     fun onReloadClick()
+    fun onClickSortByPublished()
+    fun onClickSortByDateTaken()
 }
 
 class GalleryPresenterImpl constructor(private val getFlickerPublicInfo: GetFlickerPublicInfo) :
@@ -54,5 +56,15 @@ class GalleryPresenterImpl constructor(private val getFlickerPublicInfo: GetFlic
     override fun onReloadClick() {
         flickerFeedPhotos.clear()
         fetchGalleryItems()
+    }
+
+    override fun onClickSortByPublished() {
+        flickerFeedPhotos.sortByDescending { item -> item.published }
+        galleryView?.notifyDataSetChanged()
+    }
+
+    override fun onClickSortByDateTaken() {
+        flickerFeedPhotos.sortByDescending { item -> item.date_taken }
+        galleryView?.notifyDataSetChanged()
     }
 }

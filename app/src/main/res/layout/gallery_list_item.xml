@@ -8,7 +8,7 @@
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/galleryItemImage"
-        android:layout_width="128dp"
+        android:layout_width="192dp"
         android:layout_height="0dp"
         android:layout_margin="3dp"
         android:adjustViewBounds="true"
@@ -31,7 +31,7 @@
 
     <TextView
         android:id="@+id/title"
-        android:layout_width="128dp"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="@color/colorSemiTransparent"
         android:padding="3dp"
@@ -40,7 +40,23 @@
         android:textColor="@android:color/white"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@id/galleryItemImage"
+        app:layout_constraintLeft_toLeftOf="@id/galleryItemImage"
+        app:layout_constraintRight_toRightOf="@id/galleryItemImage" />
+
+    <TextView
+        android:id="@+id/published"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/colorSemiTransparent"
+        android:gravity="center"
+        android:lines="1"
+        android:padding="3dp"
+        android:textColor="@android:color/white"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="@+id/title"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent" />
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/title"
+        app:layout_constraintTop_toBottomOf="@id/title" />
 
 </merge>
