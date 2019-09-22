@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.AttributeSet
 import android.view.LayoutInflater
+import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.flickerimagegallery.R
 import com.example.flickerimagegallery.data.entities.Item
@@ -31,9 +32,11 @@ class GalleryContentView : ConstraintLayout {
     }
 
     fun bindGalleryItem(model: Item) {
+        title.text = model.title
         CoroutineScope(Dispatchers.Main).launch {
             val originalBitmap = getOriginalBitmapAsync(model.media.image).await()
             originalBitmap.let {
+                progressBar.visibility = View.GONE
                 galleryItemImage.setImageBitmap(it)
             }
         }
