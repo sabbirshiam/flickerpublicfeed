@@ -1,7 +1,7 @@
 package com.example.flickerimagegallery.domain.usecases
 
 import android.content.Context
-import android.util.Log
+import com.example.flickerimagegallery.data.entities.Item
 import com.example.flickerimagegallery.data.entities.PublicFeed
 import com.example.flickerimagegallery.data.repositories.FlickerFeedRepository
 import retrofit2.Response
@@ -13,14 +13,11 @@ class GetFlickerPublicInfo(private val context: Context) {
 
     private val flickerFeedRepository: FlickerFeedRepository = FlickerFeedRepository(context)
 
-    suspend fun getPublicPhotos(): ArrayList<String> {
+    suspend fun getPublicPhotos(): ArrayList<Item> {
         val publicFeeds: Response<PublicFeed> = flickerFeedRepository.getPublicFeeds()
         return if(publicFeeds.isSuccessful) {
             publicFeeds.body()?.items?.let {
-                ArrayList(it.map { item ->
-                    Log.i("RESPONSE", item.media.image)
-                    item.media.image
-                })
+                ArrayList(it)
             } ?: arrayListOf()
 
         } else {

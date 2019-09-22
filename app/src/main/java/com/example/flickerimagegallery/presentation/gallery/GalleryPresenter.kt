@@ -1,7 +1,8 @@
 package com.example.flickerimagegallery.presentation.gallery
 
-import androidx.recyclerview.widget.RecyclerView
+import com.example.flickerimagegallery.data.entities.Item
 import com.example.flickerimagegallery.domain.usecases.GetFlickerPublicInfo
+import com.example.flickerimagegallery.presentation.gallery.viewLists.GalleryItemsAdapter.*
 import kotlinx.coroutines.*
 
 
@@ -10,14 +11,15 @@ interface GalleryPresenter {
     fun dropView()
     fun getGalleryItemCount(): Int
     fun onBindGalleryItemView(
-        holder: RecyclerView.ViewHolder,
+        holder: GalleryItemViewHolder,
         position: Int
     )
 }
-class GalleryPresenterImpl constructor(private val getFlickerPublicInfo: GetFlickerPublicInfo):
+
+class GalleryPresenterImpl constructor(private val getFlickerPublicInfo: GetFlickerPublicInfo) :
     GalleryPresenter {
     private var galleryView: GalleryView? = null
-    private var flickerFeedPhotos: ArrayList<String> = ArrayList()
+    private var flickerFeedPhotos: ArrayList<Item> = ArrayList()
 
     override fun takeView(view: GalleryView) {
         galleryView = view
@@ -25,13 +27,12 @@ class GalleryPresenterImpl constructor(private val getFlickerPublicInfo: GetFlic
     }
 
     private fun fetchGalleryItems() {
-        CoroutineScope(Dispatchers.IO).launch {
-            flickerFeedPhotos  = getFlickerPublicInfo.getPublicPhotos()
-            withContext(Dispatchers.Main){
-                if (flickerFeedPhotos.isNotEmpty()) {
+        if (flickerFeedPhotos.isEmpty()) {
+            CoroutineScope(Dispatchers.IO).launch {
+                flickerFeedPhotos = getFlickerPublicInfo.getPublicPhotos()
+                withContext(Dispatchers.Main) {
                     galleryView?.notifyDataSetChanged()
                 }
-
             }
         }
     }
@@ -41,13 +42,13 @@ class GalleryPresenterImpl constructor(private val getFlickerPublicInfo: GetFlic
     }
 
     override fun getGalleryItemCount(): Int {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return flickerFeedPhotos.count()
     }
 
     override fun onBindGalleryItemView(
-        holder: RecyclerView.ViewHolder,
+        holder: GalleryItemViewHolder,
         position: Int
     ) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        galleryView?.onBindGalleryItemViewHolder(holder, flickerFeedPhotos[position])
     }
 }

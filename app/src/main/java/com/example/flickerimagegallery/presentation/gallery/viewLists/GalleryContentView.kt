@@ -1,11 +1,16 @@
 package com.example.flickerimagegallery.presentation.gallery.viewLists
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.flickerimagegallery.R
+import com.example.flickerimagegallery.data.entities.Item
+import kotlinx.android.synthetic.main.gallery_list_item.view.*
+import kotlinx.coroutines.*
+import java.net.URL
 
 class GalleryContentView : ConstraintLayout {
 
@@ -19,12 +24,25 @@ class GalleryContentView : ConstraintLayout {
 
     init {
         LayoutInflater.from(context).inflate(R.layout.gallery_list_item, this, true)
-        layoutParams = FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.MATCH_PARENT,
-            FrameLayout.LayoutParams.WRAP_CONTENT
+        layoutParams = LayoutParams(
+            LayoutParams.MATCH_PARENT,
+            LayoutParams.WRAP_CONTENT
         )
     }
 
-    fun bindGalleryItem() {
+    fun bindGalleryItem(model: Item) {
+        CoroutineScope(Dispatchers.Main).launch {
+            val originalBitmap = getOriginalBitmapAsync(model.media.image).await()
+            originalBitmap.let {
+                galleryItemImage.setImageBitmap(it)
+            }
+        }
     }
+
+    private fun getOriginalBitmapAsync(imageUrlString: String): Deferred<Bitmap> =
+        CoroutineScope(Dispatchers.IO).async {
+            URL(imageUrlString).openStream().use {
+                return@async BitmapFactory.decodeStream(it)
+            }
+        }
 }

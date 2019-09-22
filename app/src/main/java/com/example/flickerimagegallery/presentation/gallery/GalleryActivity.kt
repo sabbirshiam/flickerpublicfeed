@@ -3,7 +3,9 @@ package com.example.flickerimagegallery.presentation.gallery
 import android.content.Context
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.recyclerview.widget.GridLayoutManager
 import com.example.flickerimagegallery.R
+import com.example.flickerimagegallery.data.entities.Item
 import com.example.flickerimagegallery.domain.usecases.GetFlickerPublicInfo
 import com.example.flickerimagegallery.presentation.gallery.viewLists.GalleryContentView
 import com.example.flickerimagegallery.presentation.gallery.viewLists.GalleryItemsAdapter
@@ -12,6 +14,7 @@ import kotlinx.android.synthetic.main.activity_gallery.*
 
 interface GalleryView {
     fun notifyDataSetChanged()
+    fun onBindGalleryItemViewHolder(holder: GalleryItemViewHolder, model: Item)
 
 }
 
@@ -22,7 +25,8 @@ class GalleryActivity : AppCompatActivity(), GalleryView {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_gallery)
         presenter = GalleryPresenterImpl(GetFlickerPublicInfo(applicationContext))
-        galleryView.adapter ?: initGalleryAdapter()
+        galleryView.layoutManager = GridLayoutManager(this, 3)
+        galleryView.adapter = initGalleryAdapter()
     }
 
     override fun onStart() {
@@ -37,6 +41,10 @@ class GalleryActivity : AppCompatActivity(), GalleryView {
 
     override fun notifyDataSetChanged() {
         galleryView.adapter?.notifyDataSetChanged()
+    }
+
+    override fun onBindGalleryItemViewHolder(holder: GalleryItemViewHolder, model: Item) {
+        holder?.getView()?.bindGalleryItem(model)
     }
 
     private fun initGalleryAdapter(): GalleryItemsAdapter =
