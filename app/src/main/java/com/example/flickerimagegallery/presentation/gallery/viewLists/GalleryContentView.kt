@@ -32,7 +32,11 @@ class GalleryContentView : ConstraintLayout {
     }
 
     fun bindGalleryItem(model: Item) {
-        title.text = model.title
+        title.text = if (model.title.isNotBlank()) {
+            model.title
+        } else {
+            context.getString(R.string.no_title)
+        }
         CoroutineScope(Dispatchers.Main).launch {
             val originalBitmap = getOriginalBitmapAsync(model.media.image).await()
             originalBitmap.let {
