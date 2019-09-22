@@ -9,6 +9,6 @@ import retrofit2.http.Query
 interface FlickerService {
 
     @GET(BuildConfig.API_PREFIX.plus("services/feeds/photos_public.gne"))
-    fun getPublicFeedPhotos(@Query("format") format: String,
-                            @Query("nojsoncallback") rawJson: String): Call<PublicFeed>
+    fun getPublicFeed(@Query("format") format: String,
+                      @Query("nojsoncallback") rawJson: String): Call<PublicFeed>
 }

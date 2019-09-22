@@ -24,5 +24,5 @@ data class Item(
 )
 
 data class Media(
-    val m: String
+   @field:Json(name = "m") val image: String
 )
