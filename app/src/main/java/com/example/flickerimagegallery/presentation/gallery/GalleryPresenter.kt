@@ -14,6 +14,8 @@ interface GalleryPresenter {
         holder: GalleryItemViewHolder,
         position: Int
     )
+
+    fun onReloadClick()
 }
 
 class GalleryPresenterImpl constructor(private val getFlickerPublicInfo: GetFlickerPublicInfo) :
@@ -45,10 +47,12 @@ class GalleryPresenterImpl constructor(private val getFlickerPublicInfo: GetFlic
         return flickerFeedPhotos.count()
     }
 
-    override fun onBindGalleryItemView(
-        holder: GalleryItemViewHolder,
-        position: Int
-    ) {
+    override fun onBindGalleryItemView(holder: GalleryItemViewHolder, position: Int) {
         galleryView?.onBindGalleryItemViewHolder(holder, flickerFeedPhotos[position])
+    }
+
+    override fun onReloadClick() {
+        flickerFeedPhotos.clear()
+        fetchGalleryItems()
     }
 }

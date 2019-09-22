@@ -27,6 +27,7 @@ class GalleryActivity : AppCompatActivity(), GalleryView {
         presenter = GalleryPresenterImpl(GetFlickerPublicInfo(applicationContext))
         galleryView.layoutManager = GridLayoutManager(this, 3)
         galleryView.adapter = initGalleryAdapter()
+        floatingActionButton.setOnClickListener { presenter.onReloadClick() }
     }
 
     override fun onStart() {
@@ -44,7 +45,7 @@ class GalleryActivity : AppCompatActivity(), GalleryView {
     }
 
     override fun onBindGalleryItemViewHolder(holder: GalleryItemViewHolder, model: Item) {
-        holder?.getView()?.bindGalleryItem(model)
+        holder.getView()?.bindGalleryItem(model)
     }
 
     private fun initGalleryAdapter(): GalleryItemsAdapter =
