@@ -1,6 +1,8 @@
 package com.example.flickerimagegallery.presentation.gallery
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Menu
@@ -18,6 +20,7 @@ import kotlinx.android.synthetic.main.activity_gallery.*
 interface GalleryView {
     fun notifyDataSetChanged()
     fun onBindGalleryItemViewHolder(holder: GalleryItemViewHolder, model: Item)
+    fun openInBrowser(model: Item)
 
 }
 
@@ -56,6 +59,14 @@ class GalleryActivity : AppCompatActivity(), GalleryView {
         return super.onOptionsItemSelected(item)
     }
 
+    override fun openInBrowser(model: Item) {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(model.media.image))
+
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent)
+        }
+    }
+
     override fun notifyDataSetChanged() {
         galleryView.adapter?.notifyDataSetChanged()
     }
@@ -70,14 +81,26 @@ class GalleryActivity : AppCompatActivity(), GalleryView {
                 override fun getItemCount(): Int = presenter.getGalleryItemCount()
             },
             contentViewCreator = object : ContentViewCreator {
-                override fun createGalleryItemView(context: Context): GalleryContentView =
-                    GalleryContentView(context)
+                override fun createGalleryItemView(context: Context): GalleryContentView {
+                    return GalleryContentView(context).apply {
+                        setOnClickListener {
+                            (getTag(R.id.VIEW_TAG_POSITION) as? Int)?.let { position ->
+                                presenter.onClickImage(position)
+                            }
+                        }
+
+                    }
+                }
+
             },
             bindListener = object : OnBindListener {
                 override fun onBindGalleryItemView(
                     holder: GalleryItemViewHolder,
                     position: Int
-                ) = presenter.onBindGalleryItemView(holder, position)
+                ) {
+                    holder.getView()?.setTag(R.id.VIEW_TAG_POSITION, holder.adapterPosition)
+                    presenter.onBindGalleryItemView(holder, position)
+                }
 
             })
 }
