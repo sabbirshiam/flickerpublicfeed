@@ -3,6 +3,7 @@ package com.example.flickerimagegallery.presentation.gallery
 import com.example.flickerimagegallery.data.entities.Item
 import com.example.flickerimagegallery.domain.usecases.GetFlickerPublicInfo
 import com.example.flickerimagegallery.presentation.gallery.viewLists.GalleryItemsAdapter.*
+import com.example.flickerimagegallery.utils.CoroutineContextProvider
 import kotlinx.coroutines.*
 
 
@@ -21,7 +22,9 @@ interface GalleryPresenter {
     fun onClickImage(position: Int)
 }
 
-class GalleryPresenterImpl constructor(private val getFlickerPublicInfo: GetFlickerPublicInfo) :
+class GalleryPresenterImpl constructor(private val getFlickerPublicInfo: GetFlickerPublicInfo,
+                                       private val contextPool: CoroutineContextProvider
+                                       = CoroutineContextProvider()) :
     GalleryPresenter {
     private var galleryView: GalleryView? = null
     private var flickerFeedPhotos: ArrayList<Item> = ArrayList()
@@ -31,11 +34,14 @@ class GalleryPresenterImpl constructor(private val getFlickerPublicInfo: GetFlic
         fetchGalleryItems()
     }
 
-    private fun fetchGalleryItems() {
+    /**
+     * only fetch new contents when list of Photos is empty.
+     */
+    fun fetchGalleryItems() {
         if (flickerFeedPhotos.isEmpty()) {
-            CoroutineScope(Dispatchers.IO).launch {
+            CoroutineScope(contextPool.IO).launch {
                 flickerFeedPhotos = getFlickerPublicInfo.getPublicPhotos()
-                withContext(Dispatchers.Main) {
+                withContext(contextPool.Main) {
                     galleryView?.notifyDataSetChanged()
                 }
             }
