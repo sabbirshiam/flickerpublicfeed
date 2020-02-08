@@ -13,9 +13,11 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
+import androidx.core.app.ActivityCompat
+import android.content.pm.PackageManager
+import android.os.Build
 
-
-fun Activity.getPickIntent(): Intent? {
+fun Activity.getPickIntent(requestCode: Int) {
     val intents = ArrayList<Intent>()
     intents.add(
         Intent(
@@ -25,14 +27,12 @@ fun Activity.getPickIntent(): Intent? {
     )
     setCameraIntents(intents)
 
-    if (intents.isEmpty()) return null
+    if (intents.isEmpty()) return
     val result = Intent.createChooser(intents.removeAt(0), null)
     if (intents.isNotEmpty()) {
         result.putExtra(Intent.EXTRA_INITIAL_INTENTS, intents.toTypedArray<Parcelable>())
     }
-    return result
-
-
+    startActivityForResult(result, requestCode)
 }
 
 fun Activity.setCameraIntents(cameraIntents: MutableList<Intent>) {
@@ -87,7 +87,7 @@ fun Activity.getImagePath(uri: Uri?): String {
             .also { currentPhotoPath = null }
             .also {
                 currentPhotoPath = convertMediaUriToPath(uri)
-                Log.e("URI", "paht:: $currentPhotoPath")
+                Log.e("URI", "path:: $currentPhotoPath")
             }
     }
     return currentPhotoPath ?: ""
@@ -109,4 +109,20 @@ fun Activity.convertMediaUriToPath(uri: Uri): String {
     val path = column_index?.run { cursor?.getString(this) } ?: ""
     cursor?.close()
     return path
+}
+
+fun Activity.isHasPermission(permissions: Array<String>): Boolean {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        var permissionFlag = true
+        for (singlePermission in permissions) {
+            permissionFlag =
+                applicationContext.checkSelfPermission(singlePermission) == PackageManager.PERMISSION_GRANTED
+        }
+        return permissionFlag
+    }
+    return true
+}
+
+fun Activity.askPermission(requestCode: Int, permissions: Array<String>) {
+    ActivityCompat.requestPermissions(this, permissions, requestCode)
 }
