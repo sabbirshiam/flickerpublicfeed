@@ -14,6 +14,7 @@ class UploadFile(private val context: Context) {
         val publicFeeds: retrofit2.Response<FileUploadResponse> = fileUploadRepository.uploadFile(filePath)
         if (publicFeeds.isSuccessful) {
             Log.e("File", "Uploading is success")
+            Log.e("File", "${publicFeeds.body()}")
 
         } else {
             Log.e("File", "Uploading failed:: ${publicFeeds.body().toString()}")
