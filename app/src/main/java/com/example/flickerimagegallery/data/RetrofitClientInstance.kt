@@ -5,6 +5,9 @@ import com.example.flickerimagegallery.data.repositories.FlickerService
 import com.example.flickerimagegallery.data.repositories.file_upload.FileUploadService
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import java.util.concurrent.TimeUnit
 
 
 class RetrofitClientInstance {
@@ -17,14 +20,26 @@ class RetrofitClientInstance {
         }
     }
 
+   private var logging: HttpLoggingInterceptor = HttpLoggingInterceptor()
+        .setLevel(HttpLoggingInterceptor.Level.BODY)
+
+    private var httpClient: OkHttpClient.Builder = OkHttpClient.Builder()
+        .callTimeout(2, TimeUnit.MINUTES)
+        .connectTimeout(60, TimeUnit.SECONDS)
+        .readTimeout(60, TimeUnit.SECONDS)
+        .writeTimeout(60, TimeUnit.SECONDS)
+        .addInterceptor(logging)
+
     private val retrofitInstance: Retrofit = retrofit2.Retrofit.Builder()
         .baseUrl(BuildConfig.API_PREFIX)
         .addConverterFactory(MoshiConverterFactory.create())
+        .client(httpClient.build())
         .build()
 
     private val retrofitInstanceWithFile: Retrofit = retrofit2.Retrofit.Builder()
         .baseUrl(BuildConfig.FILE_UPLOAD_API_PREFIX)
         .addConverterFactory(MoshiConverterFactory.create())
+        .client(httpClient.build())
         .build()
 
     val flickerService: FlickerService =
