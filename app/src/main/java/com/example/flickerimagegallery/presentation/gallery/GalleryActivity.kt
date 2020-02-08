@@ -1,5 +1,6 @@
 package com.example.flickerimagegallery.presentation.gallery
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -15,12 +16,23 @@ import com.example.flickerimagegallery.presentation.gallery.viewLists.GalleryCon
 import com.example.flickerimagegallery.presentation.gallery.viewLists.GalleryItemsAdapter
 import com.example.flickerimagegallery.presentation.gallery.viewLists.GalleryItemsAdapter.*
 import kotlinx.android.synthetic.main.activity_gallery.*
+import android.provider.MediaStore
+import android.os.Parcelable
+import android.os.Environment.DIRECTORY_PICTURES
+import android.util.Log
+import androidx.core.content.FileProvider
+import java.io.File
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
+import kotlin.collections.ArrayList
 
 
 interface GalleryView {
     fun notifyDataSetChanged()
     fun onBindGalleryItemViewHolder(holder: GalleryItemViewHolder, model: Item)
     fun openInBrowser(model: Item)
+    fun openImageChooser()
 
 }
 
@@ -55,6 +67,7 @@ class GalleryActivity : AppCompatActivity(), GalleryView {
         when (item.itemId) {
             R.id.sortByPublished -> presenter.onClickSortByPublished()
             R.id.sortByDateTaken -> presenter.onClickSortByDateTaken()
+            R.id.uploadImage -> presenter.onClickUploadImage()
         }
         return super.onOptionsItemSelected(item)
     }
@@ -73,6 +86,25 @@ class GalleryActivity : AppCompatActivity(), GalleryView {
 
     override fun onBindGalleryItemViewHolder(holder: GalleryItemViewHolder, model: Item) {
         holder.getView()?.bindGalleryItem(model)
+    }
+
+    override fun openImageChooser() {
+        val intent = getPickIntent()
+        startActivityForResult(intent, 1000)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == Activity.RESULT_OK) {
+            when (requestCode) {
+                1000 -> {
+                    data?.data.let {
+                        getImagePath(it)
+                    }
+                }
+            }
+        }
+        // super.onActivityResult(requestCode, resultCode, data)
     }
 
     private fun initGalleryAdapter(): GalleryItemsAdapter =

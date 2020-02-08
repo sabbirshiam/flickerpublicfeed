@@ -5,4 +5,7 @@
         android:title="@string/order_by_published"/>
     <item android:id="@+id/sortByDateTaken"
         android:title="@string/order_by_date_taken"/>
+
+    <item android:id="@+id/uploadImage"
+        android:title="@string/upload_image"/>
 </menu>

@@ -20,6 +20,7 @@ interface GalleryPresenter {
     fun onClickSortByPublished()
     fun onClickSortByDateTaken()
     fun onClickImage(position: Int)
+    fun onClickUploadImage()
 }
 
 class GalleryPresenterImpl constructor(private val getFlickerPublicInfo: GetFlickerPublicInfo,
@@ -77,5 +78,9 @@ class GalleryPresenterImpl constructor(private val getFlickerPublicInfo: GetFlic
 
     override fun onClickImage(position: Int) {
         galleryView?.openInBrowser(flickerFeedPhotos[position])
+    }
+
+    override fun onClickUploadImage() {
+        galleryView?.openImageChooser()
     }
 }
