@@ -1,8 +1,10 @@
 package com.example.flickerimagegallery.presentation.gallery
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -16,24 +18,20 @@ import com.example.flickerimagegallery.presentation.gallery.viewLists.GalleryCon
 import com.example.flickerimagegallery.presentation.gallery.viewLists.GalleryItemsAdapter
 import com.example.flickerimagegallery.presentation.gallery.viewLists.GalleryItemsAdapter.*
 import kotlinx.android.synthetic.main.activity_gallery.*
-import android.provider.MediaStore
-import android.os.Parcelable
-import android.os.Environment.DIRECTORY_PICTURES
-import android.util.Log
-import androidx.core.content.FileProvider
 import com.example.flickerimagegallery.domain.usecases.UploadFile
-import java.io.File
-import java.io.IOException
-import java.text.SimpleDateFormat
-import java.util.*
-import kotlin.collections.ArrayList
-
+import com.example.flickerimagegallery.presentation.gallery.GalleryView.Companion.IMAGE_CAPTURE_REQUEST_CODE
+import com.example.flickerimagegallery.presentation.gallery.GalleryView.Companion.STORAGE_STORAGE_REQUEST_CODE
 
 interface GalleryView {
     fun notifyDataSetChanged()
     fun onBindGalleryItemViewHolder(holder: GalleryItemViewHolder, model: Item)
     fun openInBrowser(model: Item)
     fun openImageChooser()
+
+    companion object {
+        const val STORAGE_STORAGE_REQUEST_CODE: Int  = 1010
+        const val IMAGE_CAPTURE_REQUEST_CODE: Int = 1000
+    }
 
 }
 
@@ -93,15 +91,21 @@ class GalleryActivity : AppCompatActivity(), GalleryView {
     }
 
     override fun openImageChooser() {
-        val intent = getPickIntent()
-        startActivityForResult(intent, 1000)
+        val permissions =
+            arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+
+        if (!isHasPermission(permissions))
+            askPermission(STORAGE_STORAGE_REQUEST_CODE, permissions)
+        else {
+            getPickIntent(IMAGE_CAPTURE_REQUEST_CODE)
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK) {
             when (requestCode) {
-                1000 -> {
+                IMAGE_CAPTURE_REQUEST_CODE -> {
                     data?.data.let {
                         presenter.uploadFile(getImagePath(it))
                     }
@@ -109,6 +113,27 @@ class GalleryActivity : AppCompatActivity(), GalleryView {
             }
         }
         // super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        when (requestCode) {
+            STORAGE_STORAGE_REQUEST_CODE -> {
+                // If request is cancelled, the result arrays are empty.
+                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+                    openImageChooser()
+                } else {
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                }
+                return
+            }
+        }
     }
 
     private fun initGalleryAdapter(): GalleryItemsAdapter =

@@ -58,7 +58,7 @@ class GalleryPresenterImpl constructor(
         CoroutineScope(contextPool.IO).launch {
             uploadFile.uploadFile(filePath)
             withContext(contextPool.Main) {
-                galleryView?.notifyDataSetChanged()
+               // galleryView?.notifyDataSetChanged()
             }
         }
     }
