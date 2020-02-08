@@ -2,6 +2,7 @@ package com.example.flickerimagegallery.presentation.gallery
 
 import com.example.flickerimagegallery.data.entities.Item
 import com.example.flickerimagegallery.domain.usecases.GetFlickerPublicInfo
+import com.example.flickerimagegallery.domain.usecases.UploadFile
 import com.example.flickerimagegallery.presentation.gallery.viewLists.GalleryItemsAdapter.*
 import com.example.flickerimagegallery.utils.CoroutineContextProvider
 import kotlinx.coroutines.*
@@ -21,11 +22,15 @@ interface GalleryPresenter {
     fun onClickSortByDateTaken()
     fun onClickImage(position: Int)
     fun onClickUploadImage()
+    fun uploadFile(filePath: String)
 }
 
-class GalleryPresenterImpl constructor(private val getFlickerPublicInfo: GetFlickerPublicInfo,
-                                       private val contextPool: CoroutineContextProvider
-                                       = CoroutineContextProvider()) :
+class GalleryPresenterImpl constructor(
+    private val uploadFile: UploadFile,
+    private val getFlickerPublicInfo: GetFlickerPublicInfo,
+    private val contextPool: CoroutineContextProvider
+    = CoroutineContextProvider()
+) :
     GalleryPresenter {
     private var galleryView: GalleryView? = null
     private var flickerFeedPhotos: ArrayList<Item> = ArrayList()
@@ -45,6 +50,15 @@ class GalleryPresenterImpl constructor(private val getFlickerPublicInfo: GetFlic
                 withContext(contextPool.Main) {
                     galleryView?.notifyDataSetChanged()
                 }
+            }
+        }
+    }
+
+    override fun uploadFile(filePath: String) {
+        CoroutineScope(contextPool.IO).launch {
+            uploadFile.uploadFile(filePath)
+            withContext(contextPool.Main) {
+                galleryView?.notifyDataSetChanged()
             }
         }
     }

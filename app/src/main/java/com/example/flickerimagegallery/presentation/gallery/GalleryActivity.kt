@@ -21,6 +21,7 @@ import android.os.Parcelable
 import android.os.Environment.DIRECTORY_PICTURES
 import android.util.Log
 import androidx.core.content.FileProvider
+import com.example.flickerimagegallery.domain.usecases.UploadFile
 import java.io.File
 import java.io.IOException
 import java.text.SimpleDateFormat
@@ -42,7 +43,10 @@ class GalleryActivity : AppCompatActivity(), GalleryView {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_gallery)
-        presenter = GalleryPresenterImpl(GetFlickerPublicInfo(applicationContext))
+        presenter = GalleryPresenterImpl(
+            UploadFile(applicationContext),
+            GetFlickerPublicInfo(applicationContext)
+        )
         galleryView.layoutManager = GridLayoutManager(this, 2)
         galleryView.adapter = initGalleryAdapter()
         floatingActionButton.setOnClickListener { presenter.onReloadClick() }
@@ -99,7 +103,7 @@ class GalleryActivity : AppCompatActivity(), GalleryView {
             when (requestCode) {
                 1000 -> {
                     data?.data.let {
-                        getImagePath(it)
+                        presenter.uploadFile(getImagePath(it))
                     }
                 }
             }

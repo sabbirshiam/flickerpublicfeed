@@ -81,10 +81,16 @@ fun Activity.createImageFile(): File {
     }
 }
 
-fun Activity.getImagePath(uri: Uri?) {
-    uri?.let { deleteImageFile().also { currentPhotoPath = null } }
-    Log.e("URI", "Data uri:: $uri  and $currentPhotoPath")
-
+fun Activity.getImagePath(uri: Uri?): String {
+    uri?.let {
+        deleteImageFile()
+            .also { currentPhotoPath = null }
+            .also {
+                currentPhotoPath = convertMediaUriToPath(uri)
+                Log.e("URI", "paht:: $currentPhotoPath")
+            }
+    }
+    return currentPhotoPath ?: ""
 }
 
 private fun deleteImageFile() {
@@ -93,4 +99,14 @@ private fun deleteImageFile() {
         file?.delete()
         Log.e("data", file.exists().toString())
     }
+}
+
+fun Activity.convertMediaUriToPath(uri: Uri): String {
+    val proj = arrayOf(MediaStore.Images.Media.DATA)
+    val cursor = contentResolver.query(uri, proj, null, null, null)
+    val column_index = cursor?.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+    cursor?.moveToFirst()
+    val path = column_index?.run { cursor?.getString(this) } ?: ""
+    cursor?.close()
+    return path
 }
