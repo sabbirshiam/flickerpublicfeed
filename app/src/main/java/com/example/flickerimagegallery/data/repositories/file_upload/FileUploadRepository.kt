@@ -38,8 +38,6 @@ class FileUploadRepository(private val context: Context) {
             return application.getRetrofitIntance().fileUploadService.uploadFile(body)
         }
 
-        val builder = MultipartBody.Builder().setType(MultipartBody.FORM)
-            .addFormDataPart("avatar", file.name, RequestBody.create(MultipartBody.FORM, file))
         val body: MultipartBody.Part =
             MultipartBody.Part.createFormData("avatar", file.name, null)
         return application.getRetrofitIntance().fileUploadService.uploadFile(body)
