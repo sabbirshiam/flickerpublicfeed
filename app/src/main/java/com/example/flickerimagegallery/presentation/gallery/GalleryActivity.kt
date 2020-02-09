@@ -21,12 +21,14 @@ import kotlinx.android.synthetic.main.activity_gallery.*
 import com.example.flickerimagegallery.domain.usecases.UploadFile
 import com.example.flickerimagegallery.presentation.gallery.GalleryView.Companion.IMAGE_CAPTURE_REQUEST_CODE
 import com.example.flickerimagegallery.presentation.gallery.GalleryView.Companion.STORAGE_STORAGE_REQUEST_CODE
+import com.example.flickerimagegallery.utils.FileHelper
 
 interface GalleryView {
     fun notifyDataSetChanged()
     fun onBindGalleryItemViewHolder(holder: GalleryItemViewHolder, model: Item)
     fun openInBrowser(model: Item)
     fun openImageChooser()
+    fun clearCacheFiles()
 
     companion object {
         const val STORAGE_STORAGE_REQUEST_CODE: Int  = 1010
@@ -97,8 +99,12 @@ class GalleryActivity : AppCompatActivity(), GalleryView {
         if (!isHasPermission(permissions))
             askPermission(STORAGE_STORAGE_REQUEST_CODE, permissions)
         else {
-            getPickIntent(IMAGE_CAPTURE_REQUEST_CODE)
+            getContentIntent(IMAGE_CAPTURE_REQUEST_CODE)
         }
+    }
+
+    override fun clearCacheFiles() {
+        FileHelper.clearCache(applicationContext)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -107,12 +113,11 @@ class GalleryActivity : AppCompatActivity(), GalleryView {
             when (requestCode) {
                 IMAGE_CAPTURE_REQUEST_CODE -> {
                     data?.data.let {
-                        presenter.uploadFile(getImagePath(it))
+                        presenter.uploadFile(FileHelper.getImagePath(applicationContext, it))
                     }
                 }
             }
         }
-        // super.onActivityResult(requestCode, resultCode, data)
     }
 
     override fun onRequestPermissionsResult(

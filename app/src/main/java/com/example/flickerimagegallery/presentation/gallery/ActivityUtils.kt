@@ -3,32 +3,40 @@ package com.example.flickerimagegallery.presentation.gallery
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
-import android.os.Environment
-import android.os.Parcelable
 import android.provider.MediaStore
 import android.util.Log
 import androidx.core.content.FileProvider
-import java.io.File
-import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 import androidx.core.app.ActivityCompat
 import android.content.pm.PackageManager
-import android.os.Build
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.media.MediaScannerConnection
+import android.os.*
+import com.example.flickerimagegallery.utils.FileHelper
+import java.io.*
 
-fun Activity.getPickIntent(requestCode: Int) {
+fun Activity.getContentIntent(requestCode: Int) {
+    val mimeTypes = arrayOf(
+        "image/jpeg",
+        "image/png"
+    )
     val intents = ArrayList<Intent>()
     intents.add(
         Intent(
-            Intent.ACTION_PICK,
+            Intent.ACTION_GET_CONTENT,
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-        )
+        ).apply {
+            putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
+            addCategory(Intent.CATEGORY_OPENABLE)
+        }
     )
     setCameraIntents(intents)
 
     if (intents.isEmpty()) return
-    val result = Intent.createChooser(intents.removeAt(0), null)
+    val result = Intent.createChooser(intents.removeAt(0), "Choose Images")
     if (intents.isNotEmpty()) {
         result.putExtra(Intent.EXTRA_INITIAL_INTENTS, intents.toTypedArray<Parcelable>())
     }
@@ -43,7 +51,7 @@ fun Activity.setCameraIntents(cameraIntents: MutableList<Intent>) {
         takePictureIntent.resolveActivity(packageManager)?.also {
             // Create the File where the photo should go
             val photoFile: File? = try {
-                createImageFile()
+                FileHelper.createImageFile(this)
             } catch (ex: IOException) {
                 // Error occurred while creating the File
                 Log.e("Error", "Error occured while creating the file")
@@ -62,53 +70,6 @@ fun Activity.setCameraIntents(cameraIntents: MutableList<Intent>) {
     }
 
     cameraIntents.add(captureIntent)
-}
-
-private var currentPhotoPath: String? = null
-
-@Throws(IOException::class)
-fun Activity.createImageFile(): File {
-    // Create an image file name
-    val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-    val storageDir: File? = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-    return File.createTempFile(
-        "JPEG_${timeStamp}_", /* prefix */
-        ".jpg", /* suffix */
-        storageDir /* directory */
-    ).apply {
-        // Save a file: path for use with ACTION_VIEW intents
-        currentPhotoPath = absolutePath
-    }
-}
-
-fun Activity.getImagePath(uri: Uri?): String {
-    uri?.let {
-        deleteImageFile()
-            .also { currentPhotoPath = null }
-            .also {
-                currentPhotoPath = convertMediaUriToPath(uri)
-                Log.e("URI", "path:: $currentPhotoPath")
-            }
-    }
-    return currentPhotoPath ?: ""
-}
-
-private fun deleteImageFile() {
-    currentPhotoPath?.let { path ->
-        val file = File(path)
-        file?.delete()
-        Log.e("data", file.exists().toString())
-    }
-}
-
-fun Activity.convertMediaUriToPath(uri: Uri): String {
-    val proj = arrayOf(MediaStore.Images.Media.DATA)
-    val cursor = contentResolver.query(uri, proj, null, null, null)
-    val column_index = cursor?.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
-    cursor?.moveToFirst()
-    val path = column_index?.run { cursor?.getString(this) } ?: ""
-    cursor?.close()
-    return path
 }
 
 fun Activity.isHasPermission(permissions: Array<String>): Boolean {

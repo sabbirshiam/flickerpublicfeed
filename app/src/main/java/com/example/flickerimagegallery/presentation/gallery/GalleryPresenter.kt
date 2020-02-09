@@ -5,6 +5,7 @@ import com.example.flickerimagegallery.domain.usecases.GetFlickerPublicInfo
 import com.example.flickerimagegallery.domain.usecases.UploadFile
 import com.example.flickerimagegallery.presentation.gallery.viewLists.GalleryItemsAdapter.*
 import com.example.flickerimagegallery.utils.CoroutineContextProvider
+import com.example.flickerimagegallery.utils.FileHelper
 import kotlinx.coroutines.*
 
 
@@ -56,8 +57,9 @@ class GalleryPresenterImpl constructor(
 
     override fun uploadFile(filePath: String) {
         CoroutineScope(contextPool.IO).launch {
-            uploadFile.uploadFile(filePath)
+            val isSuccess = uploadFile.uploadFile(filePath)
             withContext(contextPool.Main) {
+                if(isSuccess) galleryView?.clearCacheFiles()
                // galleryView?.notifyDataSetChanged()
             }
         }
