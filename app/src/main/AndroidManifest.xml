@@ -33,6 +33,7 @@
 
             </intent-filter>
         </activity>
+        <activity android:name=".presentation.uploadimage.UploadImageActivity" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

@@ -23,11 +23,9 @@ interface GalleryPresenter {
     fun onClickSortByDateTaken()
     fun onClickImage(position: Int)
     fun onClickUploadImage()
-    fun uploadFile(filePath: String)
 }
 
 class GalleryPresenterImpl constructor(
-    private val uploadFile: UploadFile,
     private val getFlickerPublicInfo: GetFlickerPublicInfo,
     private val contextPool: CoroutineContextProvider
     = CoroutineContextProvider()
@@ -51,16 +49,6 @@ class GalleryPresenterImpl constructor(
                 withContext(contextPool.Main) {
                     galleryView?.notifyDataSetChanged()
                 }
-            }
-        }
-    }
-
-    override fun uploadFile(filePath: String) {
-        CoroutineScope(contextPool.IO).launch {
-            val isSuccess = uploadFile.uploadFile(filePath)
-            withContext(contextPool.Main) {
-                if(isSuccess) galleryView?.clearCacheFiles()
-               // galleryView?.notifyDataSetChanged()
             }
         }
     }
@@ -97,6 +85,6 @@ class GalleryPresenterImpl constructor(
     }
 
     override fun onClickUploadImage() {
-        galleryView?.openImageChooser()
+        galleryView?.navigateToUploadImage()
     }
 }

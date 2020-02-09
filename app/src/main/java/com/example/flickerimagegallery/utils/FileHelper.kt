@@ -56,7 +56,7 @@ object FileHelper {
     }
 
     @Throws(IOException::class, FileNotFoundException::class)
-    private fun getBitmapFromUri(context: Context, uri: Uri): Bitmap? {
+    fun getBitmapFromUri(context: Context, uri: Uri): Bitmap? {
         val parcelFileDescriptor: ParcelFileDescriptor? =
             context.contentResolver.openFileDescriptor(uri, "r")
         parcelFileDescriptor?.let {
