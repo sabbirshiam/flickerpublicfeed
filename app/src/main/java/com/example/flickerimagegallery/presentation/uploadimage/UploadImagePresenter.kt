@@ -21,6 +21,7 @@ interface UploadImagePresenter {
     fun getItemViewType(position: Int): Int
     fun onBindContentView(holder: ImageContentItemViewHolder, position: Int)
     fun onBindImagePreviewView(holder: ImagePreviewItemViewHolder, position: Int)
+    fun onClickImageDelete()
 }
 
 class UploadImagePresenterImpl(
@@ -79,16 +80,25 @@ class UploadImagePresenterImpl(
         view?.openImageChooser()
     }
 
+    override fun onClickImageDelete() {
+        setImage(null)
+        view?.clearCacheFiles()
+    }
+
     override fun uploadFile(filePath: String) {
-        dataList.filterIsInstance<ImagePreviewModel>().first().apply {
-            this.image = filePath
-        }
-        view?.notifyItemChanged()
+        setImage(filePath)
+
         CoroutineScope(contextPool.IO).launch {
             val isSuccess = uploadFile.uploadFile(filePath)
             withContext(contextPool.Main) {
-                if (isSuccess) view?.clearCacheFiles()
             }
         }
+    }
+
+    private fun setImage(path: String?) {
+        dataList.filterIsInstance<ImagePreviewModel>().first().apply {
+            this.image = path
+        }
+        view?.notifyItemChanged()
     }
 }

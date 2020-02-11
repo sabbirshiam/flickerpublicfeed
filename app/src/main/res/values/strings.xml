@@ -4,4 +4,6 @@
     <string name="order_by_published">Order by published</string>
     <string name="order_by_date_taken">Order by taken</string>
     <string name="upload_image">Upload Image</string>
+    <string name="delete">Delete</string>
+    <string name="share">Share</string>
 </resources>

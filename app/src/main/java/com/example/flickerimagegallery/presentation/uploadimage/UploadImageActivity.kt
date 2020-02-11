@@ -6,6 +6,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
+import android.view.MenuItem
+import android.view.View
+import android.widget.PopupMenu
 import androidx.appcompat.app.AppCompatActivity
 import com.example.flickerimagegallery.R
 import com.example.flickerimagegallery.domain.models.ImageContentModel
@@ -22,7 +26,9 @@ import com.example.flickerimagegallery.presentation.uploadimage.viewlists.ImageU
 import com.example.flickerimagegallery.presentation.uploadimage.viewlists.ImageUploadAdapter.ImagePreviewItemViewHolder
 import com.example.flickerimagegallery.presentation.uploadimage.viewlists.ImageUploadView
 import com.example.flickerimagegallery.utils.FileHelper
+import com.example.flickerimagegallery.utils.showDefaultPopupMenu
 import kotlinx.android.synthetic.main.activity_upload_image.*
+import kotlinx.android.synthetic.main.image_upload_list_preview.view.*
 
 interface UploadImageView {
     fun openImageChooser()
@@ -30,6 +36,7 @@ interface UploadImageView {
     fun onBindContentViewHolder(holder: ImageContentItemViewHolder, dataModel: ImageContentModel)
     fun onBindPreviewViewHolder(holder: ImagePreviewItemViewHolder, dataModel: ImagePreviewModel)
     fun notifyItemChanged()
+    fun showImageEditView()
 
     enum class ViewType(val type: Int) {
         IMAGE_CONTENT(1),
@@ -74,6 +81,10 @@ class UploadImageActivity : AppCompatActivity(), UploadImageView {
         else {
             getContentIntent(IMAGE_CAPTURE_REQUEST_CODE)
         }
+    }
+
+    override fun showImageEditView() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun clearCacheFiles() {
@@ -136,11 +147,23 @@ class UploadImageActivity : AppCompatActivity(), UploadImageView {
 
                 override fun createImagePreviewView(context: Context): ImageUploadView {
                     return ImageUploadView(context).apply {
-                        setOnClickListener {
+                        imagePreview.setOnClickListener {
                             (getTag(R.id.VIEW_TAG_POSITION) as? Int)?.let { position ->
                                 presenter.onClickImage(position)
                             }
                         }
+                        setOnEditClickListener(View.OnClickListener {
+                            (getTag(R.id.VIEW_TAG_POSITION) as? Int)?.let { position ->
+                                it.showDefaultPopupMenu(PopupMenu.OnMenuItemClickListener { item ->
+                                    when (item?.itemId) {
+                                        R.id.delete -> presenter.onClickImageDelete()
+                                        R.id.share -> Log.e("MENU", "share clicked")
+                                    }
+                                    true
+                                })
+                            }
+                        })
+
                     }
                 }
             },

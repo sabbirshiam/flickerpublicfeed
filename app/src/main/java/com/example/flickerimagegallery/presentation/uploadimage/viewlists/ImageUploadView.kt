@@ -3,6 +3,7 @@ package com.example.flickerimagegallery.presentation.uploadimage.viewlists
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
+import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.bumptech.glide.Glide
 import com.example.flickerimagegallery.R
@@ -28,9 +29,16 @@ class ImageUploadView: ConstraintLayout {
     }
 
     fun bindImagePrevContent(model: ImagePreviewModel) {
+        editText.visibility = model.image?.let { View.VISIBLE  } ?: View.GONE
         Glide.with(this)
             .load(model.image)
             .centerCrop()
+            .placeholder(R.drawable.ic_launcher_background)
             .into(imagePreview)
     }
+
+    fun setOnEditClickListener(listener: OnClickListener) {
+        editText.setOnClickListener(listener)
+    }
+
 }
