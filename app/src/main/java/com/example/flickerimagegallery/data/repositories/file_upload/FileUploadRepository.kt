@@ -35,12 +35,12 @@ class FileUploadRepository(private val context: Context) {
             // MultipartBody.Part is used to send also the actual file name
             val body: MultipartBody.Part =
                 MultipartBody.Part.createFormData("avatar", file.name, requestFile)
-            return application.getRetrofitIntance().fileUploadService.uploadFile(body)
+            return application.getRetrofitIntance().fileUploadService.uploadFile("Himel", body)
         }
 
         val body: MultipartBody.Part =
             MultipartBody.Part.createFormData("avatar", file.name, null)
-        return application.getRetrofitIntance().fileUploadService.uploadFile(body)
+        return application.getRetrofitIntance().fileUploadService.uploadFile("",body)
 
         //return Response.error(404, ResponseBody.create(MediaType.get(""), ""))
     }
