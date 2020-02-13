@@ -33,12 +33,11 @@ object FileHelper {
 
     fun getImagePath(context: Context, uri: Uri?): String {
         uri?.let {
-            clearCache(context)
-                .also { currentPhotoPath = null }
-                .also {
+            //clearCache(context)
+
                     currentPhotoPath = convertMediaUriToPath(context, uri)
                     Log.e("URI", "path:: $currentPhotoPath")
-                }
+
         }
         return currentPhotoPath ?: ""
     }
@@ -71,8 +70,8 @@ object FileHelper {
 
     private fun saveImage(context: Context, bitmap: Bitmap): String {
         val bytes = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
-        val cacheDir = File(context.cacheDir.absolutePath.toString())
+        bitmap.compress(Bitmap.CompressFormat.PNG, 100, bytes)
+        val cacheDir = File(context.filesDir.absolutePath.toString())
         // have the object build the directory structure, if needed.
         if (!cacheDir.exists()) {
             cacheDir.mkdirs()

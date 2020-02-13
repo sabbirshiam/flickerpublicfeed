@@ -1,6 +1,5 @@
 package com.example.flickerimagegallery.presentation.uploadimage
 
-import android.net.Uri
 import com.example.flickerimagegallery.domain.models.DataModel
 import com.example.flickerimagegallery.domain.models.ImageContentModel
 import com.example.flickerimagegallery.domain.models.ImagePreviewModel
@@ -22,6 +21,7 @@ interface UploadImagePresenter {
     fun onBindContentView(holder: ImageContentItemViewHolder, position: Int)
     fun onBindImagePreviewView(holder: ImagePreviewItemViewHolder, position: Int)
     fun onClickImageDelete()
+    fun onClickShareImage()
 }
 
 class UploadImagePresenterImpl(
@@ -83,6 +83,10 @@ class UploadImagePresenterImpl(
     override fun onClickImageDelete() {
         setImage(null)
         view?.clearCacheFiles()
+    }
+
+    override fun onClickShareImage() {
+        view?.openImageShare(dataList.filterIsInstance<ImagePreviewModel>().first().image)
     }
 
     override fun uploadFile(filePath: String) {

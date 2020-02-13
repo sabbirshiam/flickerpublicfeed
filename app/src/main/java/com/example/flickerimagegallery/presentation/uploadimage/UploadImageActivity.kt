@@ -29,6 +29,10 @@ import com.example.flickerimagegallery.utils.FileHelper
 import com.example.flickerimagegallery.utils.showDefaultPopupMenu
 import kotlinx.android.synthetic.main.activity_upload_image.*
 import kotlinx.android.synthetic.main.image_upload_list_preview.view.*
+import androidx.core.content.FileProvider
+import com.example.flickerimagegallery.BuildConfig
+import java.io.File
+
 
 interface UploadImageView {
     fun openImageChooser()
@@ -37,6 +41,7 @@ interface UploadImageView {
     fun onBindPreviewViewHolder(holder: ImagePreviewItemViewHolder, dataModel: ImagePreviewModel)
     fun notifyItemChanged()
     fun showImageEditView()
+    fun openImageShare(image: String?)
 
     enum class ViewType(val type: Int) {
         IMAGE_CONTENT(1),
@@ -83,6 +88,29 @@ class UploadImageActivity : AppCompatActivity(), UploadImageView {
         }
     }
 
+    override fun openImageShare(image: String?) {
+        val intentShareFile = Intent(Intent.ACTION_SEND)
+        val fileWithinMyDir = File(image)
+
+        if (fileWithinMyDir.exists()) {
+            var uri = FileProvider.getUriForFile(applicationContext,
+                BuildConfig.APPLICATION_ID + ".fileprovider",
+                fileWithinMyDir)
+            Log.e("File", "uri:: $uri")
+            intentShareFile.putExtra(Intent.EXTRA_STREAM, uri)
+
+            intentShareFile.type = "image/*"
+
+            intentShareFile.putExtra(
+                Intent.EXTRA_SUBJECT,
+                "Sharing File..."
+            )
+            intentShareFile.putExtra(Intent.EXTRA_TEXT, "Sharing File...")
+
+            startActivity(Intent.createChooser(intentShareFile, "Share File"))
+        }
+    }
+
     override fun showImageEditView() {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
@@ -97,7 +125,6 @@ class UploadImageActivity : AppCompatActivity(), UploadImageView {
             when (requestCode) {
                 IMAGE_CAPTURE_REQUEST_CODE -> {
                     data?.data.let {
-                        //FileHelper.getBitmapFromUri(this, it)
                         presenter.uploadFile(FileHelper.getImagePath(applicationContext, it))
                     }
                 }
@@ -157,7 +184,7 @@ class UploadImageActivity : AppCompatActivity(), UploadImageView {
                                 it.showDefaultPopupMenu(PopupMenu.OnMenuItemClickListener { item ->
                                     when (item?.itemId) {
                                         R.id.delete -> presenter.onClickImageDelete()
-                                        R.id.share -> Log.e("MENU", "share clicked")
+                                        R.id.share -> presenter.onClickShareImage()
                                     }
                                     true
                                 })
