@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.example.flickerimagegallery.R
 import com.example.flickerimagegallery.domain.models.ImagePreviewModel
 import kotlinx.android.synthetic.main.image_upload_list_preview.view.*
@@ -32,6 +33,8 @@ class ImageUploadView: ConstraintLayout {
         editText.visibility = model.image?.let { View.VISIBLE  } ?: View.GONE
         Glide.with(this)
             .load(model.image)
+            .diskCacheStrategy(DiskCacheStrategy.NONE)
+            .skipMemoryCache(true)
             .centerCrop()
             .placeholder(R.drawable.ic_launcher_background)
             .into(imagePreview)
@@ -40,5 +43,4 @@ class ImageUploadView: ConstraintLayout {
     fun setOnEditClickListener(listener: OnClickListener) {
         editText.setOnClickListener(listener)
     }
-
 }

@@ -45,7 +45,7 @@ class GalleryPresenterImpl constructor(
     fun fetchGalleryItems() {
         if (flickerFeedPhotos.isEmpty()) {
             CoroutineScope(contextPool.IO).launch {
-                flickerFeedPhotos = getFlickerPublicInfo.getPublicPhotos()
+              //  flickerFeedPhotos = getFlickerPublicInfo.getPublicPhotos()
                 withContext(contextPool.Main) {
                     galleryView?.notifyDataSetChanged()
                 }

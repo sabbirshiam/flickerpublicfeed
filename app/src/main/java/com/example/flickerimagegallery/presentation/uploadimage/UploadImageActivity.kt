@@ -5,9 +5,8 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
-import android.util.Log
-import android.view.MenuItem
 import android.view.View
 import android.widget.PopupMenu
 import androidx.appcompat.app.AppCompatActivity
@@ -15,24 +14,29 @@ import com.example.flickerimagegallery.R
 import com.example.flickerimagegallery.domain.models.ImageContentModel
 import com.example.flickerimagegallery.domain.models.ImagePreviewModel
 import com.example.flickerimagegallery.domain.usecases.UploadFile
-import com.example.flickerimagegallery.presentation.uploadimage.UploadImageView.Companion.IMAGE_CAPTURE_REQUEST_CODE
-import com.example.flickerimagegallery.presentation.uploadimage.UploadImageView.Companion.STORAGE_STORAGE_REQUEST_CODE
 import com.example.flickerimagegallery.presentation.gallery.askPermission
 import com.example.flickerimagegallery.presentation.gallery.getContentIntent
 import com.example.flickerimagegallery.presentation.gallery.isHasPermission
+import com.example.flickerimagegallery.presentation.uploadimage.UploadImageView.Companion.IMAGE_CAPTURE_REQUEST_CODE
+import com.example.flickerimagegallery.presentation.uploadimage.UploadImageView.Companion.REQ_CREATE_DOCUMENT
+import com.example.flickerimagegallery.presentation.uploadimage.UploadImageView.Companion.STORAGE_STORAGE_REQUEST_CODE
 import com.example.flickerimagegallery.presentation.uploadimage.viewlists.ImageContentView
 import com.example.flickerimagegallery.presentation.uploadimage.viewlists.ImageUploadAdapter
 import com.example.flickerimagegallery.presentation.uploadimage.viewlists.ImageUploadAdapter.ImageContentItemViewHolder
 import com.example.flickerimagegallery.presentation.uploadimage.viewlists.ImageUploadAdapter.ImagePreviewItemViewHolder
 import com.example.flickerimagegallery.presentation.uploadimage.viewlists.ImageUploadView
+import com.example.flickerimagegallery.utils.CoroutineContextProvider
 import com.example.flickerimagegallery.utils.FileHelper
+import com.example.flickerimagegallery.utils.FileHelper.IMAGE_FILE_EXTENSION
+import com.example.flickerimagegallery.utils.FileHelper.IMAGE_FILE_NAME
+import com.example.flickerimagegallery.utils.FileHelper.getFileName
 import com.example.flickerimagegallery.utils.showDefaultPopupMenu
 import kotlinx.android.synthetic.main.activity_upload_image.*
 import kotlinx.android.synthetic.main.image_upload_list_preview.view.*
-import androidx.core.content.FileProvider
-import com.example.flickerimagegallery.BuildConfig
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
-
 
 interface UploadImageView {
     fun openImageChooser()
@@ -42,6 +46,8 @@ interface UploadImageView {
     fun notifyItemChanged()
     fun showImageEditView()
     fun openImageShare(image: String?)
+    fun openFileCreateDocument(url: String?)
+    fun saveImageIntoLocation(directoryUrl: Uri?, localFilePath: String?)
 
     enum class ViewType(val type: Int) {
         IMAGE_CONTENT(1),
@@ -51,6 +57,7 @@ interface UploadImageView {
     companion object {
         const val STORAGE_STORAGE_REQUEST_CODE: Int = 1010
         const val IMAGE_CAPTURE_REQUEST_CODE: Int = 1000
+        const val REQ_CREATE_DOCUMENT = 1001
     }
 }
 
@@ -89,25 +96,35 @@ class UploadImageActivity : AppCompatActivity(), UploadImageView {
     }
 
     override fun openImageShare(image: String?) {
-        val intentShareFile = Intent(Intent.ACTION_SEND)
-        val fileWithinMyDir = File(image)
+        var contextPool = CoroutineContextProvider()
+        CoroutineScope(contextPool.IO).launch {
+            image?.let {
+                val isSuccess = FileHelper.getImgCachePath(applicationContext, it)
+                withContext(contextPool.Main) {
+                    isSuccess?.let { share(isSuccess) }
+                }
+            }
 
-        if (fileWithinMyDir.exists()) {
-            var uri = FileProvider.getUriForFile(applicationContext,
-                BuildConfig.APPLICATION_ID + ".fileprovider",
-                fileWithinMyDir)
-            Log.e("File", "uri:: $uri")
-            intentShareFile.putExtra(Intent.EXTRA_STREAM, uri)
+        }
+    }
 
-            intentShareFile.type = "image/*"
+    private fun share(result: Uri) {
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.type = "image/jpeg"
+        intent.putExtra(Intent.EXTRA_SUBJECT, "Shared image")
+        intent.putExtra(Intent.EXTRA_TEXT, "Look what I found!")
+        intent.putExtra(Intent.EXTRA_STREAM, result)
+        startActivity(Intent.createChooser(intent, "Share image"))
+    }
 
-            intentShareFile.putExtra(
-                Intent.EXTRA_SUBJECT,
-                "Sharing File..."
-            )
-            intentShareFile.putExtra(Intent.EXTRA_TEXT, "Sharing File...")
-
-            startActivity(Intent.createChooser(intentShareFile, "Share File"))
+    override fun openFileCreateDocument(url: String?) {
+        url?.let {
+            val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                putExtra(Intent.EXTRA_TITLE, getFileName())
+                type = "image/*"//DocumentsContract.Document.
+            }
+            startActivityForResult(intent, REQ_CREATE_DOCUMENT)
         }
     }
 
@@ -125,11 +142,30 @@ class UploadImageActivity : AppCompatActivity(), UploadImageView {
             when (requestCode) {
                 IMAGE_CAPTURE_REQUEST_CODE -> {
                     data?.data.let {
-                        presenter.uploadFile(FileHelper.getImagePath(applicationContext, it))
+                        var isSuccess: String? = null
+                        var contextPool = CoroutineContextProvider()
+                        CoroutineScope(contextPool.IO).launch {
+                                isSuccess = FileHelper.getImagePath(applicationContext, it)
+                            }.invokeOnCompletion {
+                            CoroutineScope(contextPool.Main).launch {
+                                isSuccess?.let { presenter.uploadFile(it) }
+                            }
+                        }
+
+                    }
+                }
+
+                REQ_CREATE_DOCUMENT -> {
+                    data?.data.let {
+                        presenter.saveImageIntoLocation(it)
                     }
                 }
             }
         }
+    }
+
+    override fun saveImageIntoLocation(directoryUrl: Uri?, localFilePath: String?) {
+        FileHelper.downloadImage(applicationContext, directoryUrl, localFilePath)
     }
 
     override fun onRequestPermissionsResult(
@@ -185,6 +221,7 @@ class UploadImageActivity : AppCompatActivity(), UploadImageView {
                                     when (item?.itemId) {
                                         R.id.delete -> presenter.onClickImageDelete()
                                         R.id.share -> presenter.onClickShareImage()
+                                        R.id.download -> presenter.onClickDownloadImage()
                                     }
                                     true
                                 })

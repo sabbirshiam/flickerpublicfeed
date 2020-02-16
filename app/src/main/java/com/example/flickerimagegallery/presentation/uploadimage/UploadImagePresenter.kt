@@ -1,5 +1,6 @@
 package com.example.flickerimagegallery.presentation.uploadimage
 
+import android.net.Uri
 import com.example.flickerimagegallery.domain.models.DataModel
 import com.example.flickerimagegallery.domain.models.ImageContentModel
 import com.example.flickerimagegallery.domain.models.ImagePreviewModel
@@ -22,6 +23,8 @@ interface UploadImagePresenter {
     fun onBindImagePreviewView(holder: ImagePreviewItemViewHolder, position: Int)
     fun onClickImageDelete()
     fun onClickShareImage()
+    fun onClickDownloadImage()
+    fun saveImageIntoLocation(directoryUrl: Uri?)
 }
 
 class UploadImagePresenterImpl(
@@ -42,7 +45,7 @@ class UploadImagePresenterImpl(
     private fun initData() {
         dataList.add(ImageContentModel("First Text"))
         dataList.add(ImageContentModel("Second Text"))
-        dataList.add(ImagePreviewModel("Second Text", null))
+        dataList.add(ImagePreviewModel("Second Text", "https://scontent-nrt1-1.xx.fbcdn.net/v/t1.0-9/86390776_10221959335002078_6512294456627036160_o.jpg?_nc_cat=105&_nc_ohc=4W0jrMaYgxwAX8rdjCi&_nc_ht=scontent-nrt1-1.xx&oh=305e53738d680ea85f559e3dcb587256&oe=5EC94881"))
     }
 
     override fun dropView() {
@@ -104,5 +107,19 @@ class UploadImagePresenterImpl(
             this.image = path
         }
         view?.notifyItemChanged()
+    }
+
+    override fun onClickDownloadImage() {
+        view?.openFileCreateDocument(dataList.filterIsInstance<ImagePreviewModel>().first().image)
+    }
+
+    override fun saveImageIntoLocation(directoryUrl: Uri?) {
+        var localFilePath = dataList.filterIsInstance<ImagePreviewModel>().first().image
+        CoroutineScope(contextPool.IO).launch {
+            view?.saveImageIntoLocation(directoryUrl, localFilePath)
+            withContext(contextPool.Main) {
+            }
+        }
+
     }
 }
