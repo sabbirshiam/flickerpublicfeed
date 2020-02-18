@@ -1,6 +1,5 @@
 package com.example.flickerimagegallery.presentation.uploadimage
 
-import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -14,9 +13,7 @@ import com.example.flickerimagegallery.R
 import com.example.flickerimagegallery.domain.models.ImageContentModel
 import com.example.flickerimagegallery.domain.models.ImagePreviewModel
 import com.example.flickerimagegallery.domain.usecases.UploadFile
-import com.example.flickerimagegallery.presentation.gallery.askPermission
 import com.example.flickerimagegallery.presentation.gallery.getContentIntent
-import com.example.flickerimagegallery.presentation.gallery.isHasPermission
 import com.example.flickerimagegallery.presentation.uploadimage.UploadImageView.Companion.IMAGE_CAPTURE_REQUEST_CODE
 import com.example.flickerimagegallery.presentation.uploadimage.UploadImageView.Companion.REQ_CREATE_DOCUMENT
 import com.example.flickerimagegallery.presentation.uploadimage.UploadImageView.Companion.STORAGE_STORAGE_REQUEST_CODE
@@ -27,8 +24,6 @@ import com.example.flickerimagegallery.presentation.uploadimage.viewlists.ImageU
 import com.example.flickerimagegallery.presentation.uploadimage.viewlists.ImageUploadView
 import com.example.flickerimagegallery.utils.CoroutineContextProvider
 import com.example.flickerimagegallery.utils.FileHelper
-import com.example.flickerimagegallery.utils.FileHelper.IMAGE_FILE_EXTENSION
-import com.example.flickerimagegallery.utils.FileHelper.IMAGE_FILE_NAME
 import com.example.flickerimagegallery.utils.FileHelper.getFileName
 import com.example.flickerimagegallery.utils.showDefaultPopupMenu
 import kotlinx.android.synthetic.main.activity_upload_image.*
@@ -36,7 +31,6 @@ import kotlinx.android.synthetic.main.image_upload_list_preview.view.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.File
 
 interface UploadImageView {
     fun openImageChooser()
@@ -77,6 +71,7 @@ class UploadImageActivity : AppCompatActivity(), UploadImageView {
     override fun onStart() {
         super.onStart()
         presenter.takeView(this)
+        presenter.initData()
     }
 
     override fun onDestroy() {
@@ -86,18 +81,10 @@ class UploadImageActivity : AppCompatActivity(), UploadImageView {
 
     override fun openImageChooser() {
         getContentIntent(IMAGE_CAPTURE_REQUEST_CODE)
-//        val permissions =
-//            arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-//
-//        if (!isHasPermission(permissions))
-//            askPermission(STORAGE_STORAGE_REQUEST_CODE, permissions)
-//        else {
-//            getContentIntent(IMAGE_CAPTURE_REQUEST_CODE)
-//        }
     }
 
     override fun openImageShare(image: String?) {
-        var contextPool = CoroutineContextProvider()
+        val contextPool = CoroutineContextProvider()
         CoroutineScope(contextPool.IO).launch {
             image?.let {
                 val isSuccess = FileHelper.getImgCachePath(applicationContext, it)
@@ -114,6 +101,7 @@ class UploadImageActivity : AppCompatActivity(), UploadImageView {
         intent.putExtra(Intent.EXTRA_SUBJECT, "Shared image")
         intent.putExtra(Intent.EXTRA_TEXT, "Look what I found!")
         intent.putExtra(Intent.EXTRA_STREAM, result)
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         startActivity(Intent.createChooser(intent, "Share image"))
     }
 
