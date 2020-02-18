@@ -11,5 +11,6 @@ data class FileUploadResponse(
 data class Data(
     @field:Json(name = "mimetype") var mimetype: String,
     @field:Json(name = "name") var name: String,
-    @field:Json(name = "size") var size: String
+    @field:Json(name = "size") var size: String,
+    @field:Json(name = "url") var url: String
 )
