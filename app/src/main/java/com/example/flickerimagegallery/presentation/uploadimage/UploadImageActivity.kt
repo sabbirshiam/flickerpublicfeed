@@ -28,7 +28,7 @@ import com.example.flickerimagegallery.presentation.uploadimage.viewlists.ImageU
 import com.example.flickerimagegallery.presentation.uploadimage.viewlists.ImageUploadView
 import com.example.flickerimagegallery.utils.CoroutineContextProvider
 import com.example.flickerimagegallery.utils.FileHelper
-import com.example.flickerimagegallery.utils.FileHelper.getFileName
+import com.example.flickerimagegallery.utils.FileHelper.getDownloadFileName
 import com.example.flickerimagegallery.utils.showDefaultPopupMenu
 import kotlinx.android.synthetic.main.activity_upload_image.*
 import kotlinx.android.synthetic.main.image_upload_list_preview.view.*
@@ -111,7 +111,7 @@ class UploadImageActivity : AppCompatActivity(), UploadImageView {
             action = Intent.ACTION_SEND
             type = "image/jpeg"
             putExtra(Intent.EXTRA_TITLE, "Testing")
-            putExtra(Intent.EXTRA_TEXT, result)
+            putExtra(Intent.EXTRA_TEXT, "testing text")
             putExtra(MediaStore.EXTRA_OUTPUT, result)
             putExtra(Intent.EXTRA_STREAM, result)
             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
@@ -123,8 +123,9 @@ class UploadImageActivity : AppCompatActivity(), UploadImageView {
         url?.let {
             val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
                 addCategory(Intent.CATEGORY_OPENABLE)
-                putExtra(Intent.EXTRA_TITLE, getFileName())
+                putExtra(Intent.EXTRA_TITLE, getDownloadFileName())
                 type = "image/*"//DocumentsContract.Document.
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
             }
             startActivityForResult(intent, REQ_CREATE_DOCUMENT)
         }
