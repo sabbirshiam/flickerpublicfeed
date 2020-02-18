@@ -16,8 +16,7 @@ import java.io.IOException
 
 fun Activity.getContentIntent(requestCode: Int) {
     val mimeTypes = arrayOf(
-        "image/jpeg",
-        "image/png"
+        "image/*"
     )
     val intents = ArrayList<Intent>()
     intents.add(
