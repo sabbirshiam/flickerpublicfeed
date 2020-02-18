@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.view.View
 import android.widget.PopupMenu
 import androidx.appcompat.app.AppCompatActivity
@@ -96,22 +97,25 @@ class UploadImageActivity : AppCompatActivity(), UploadImageView {
     override fun openImageShare(image: String?) {
         val contextPool = CoroutineContextProvider()
         CoroutineScope(contextPool.IO).launch {
-            image?.let {
-                val isSuccess = FileHelper.getImgCachePath(applicationContext, it)
+            image?.let { imageUrl->
+                val imagePath = FileHelper.getImgCachePath(applicationContext, imageUrl)
                 withContext(contextPool.Main) {
-                    isSuccess?.let { share(isSuccess) }
+                    imagePath?.let { share(it) }
                 }
             }
         }
     }
 
     private fun share(result: Uri) {
-        val intent = Intent(Intent.ACTION_SEND)
-        intent.type = "image/jpeg"
-        intent.putExtra(Intent.EXTRA_SUBJECT, "Shared image")
-        intent.putExtra(Intent.EXTRA_TEXT, "Look what I found!")
-        intent.putExtra(Intent.EXTRA_STREAM, result)
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        var intent = Intent().apply {
+            action = Intent.ACTION_SEND
+            type = "image/jpeg"
+            putExtra(Intent.EXTRA_TITLE, "Testing")
+            putExtra(Intent.EXTRA_TEXT, result)
+            putExtra(MediaStore.EXTRA_OUTPUT, result)
+            putExtra(Intent.EXTRA_STREAM, result)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION)
+        }
         startActivity(Intent.createChooser(intent, "Share image"))
     }
 
