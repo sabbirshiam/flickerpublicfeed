@@ -21,7 +21,7 @@ class RetrofitClientInstance {
     }
 
    private var logging: HttpLoggingInterceptor = HttpLoggingInterceptor()
-        .setLevel(HttpLoggingInterceptor.Level.BODY)
+        .setLevel(HttpLoggingInterceptor.Level.BASIC)
 
     private var httpClient: OkHttpClient.Builder = OkHttpClient.Builder()
         .callTimeout(2, TimeUnit.MINUTES)
