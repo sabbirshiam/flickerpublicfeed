@@ -71,7 +71,7 @@ class UploadImagePresenterImpl(
 
     override fun onClickImage(position: Int) {
         (dataList[position] as? ImagePreviewModel)?.let {
-            it.image?.let { navigateToImagePreview() } ?: view?.openImageChooser()
+            view?.openImageChooser() //it.image?.let { navigateToImagePreview() } ?: view?.openImageChooser()
         }
     }
 
