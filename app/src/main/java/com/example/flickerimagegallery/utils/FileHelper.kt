@@ -3,8 +3,8 @@ package com.example.flickerimagegallery.utils
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.media.MediaScannerConnection
 import android.net.Uri
-import android.os.Environment
 import android.os.ParcelFileDescriptor
 import android.util.Log
 import androidx.core.content.FileProvider
@@ -12,7 +12,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.Target.SIZE_ORIGINAL
 import com.example.flickerimagegallery.BuildConfig
 import java.io.*
-import java.text.SimpleDateFormat
+import java.io.File.separator
 import java.util.*
 import java.util.concurrent.ExecutionException
 
@@ -22,31 +22,23 @@ object FileHelper {
     private var currentPhotoPath: String? = null
     const val IMAGE_FILE_NAME = "documents_temp"
     const val IMAGE_FILE_DIRECTORIES = "documents"
-    const val IMAGE_FILE_EXTENSION = ".png"
+    const val IMAGE_FILE_EXTENSION = ".jpg"
+    const val LOG_TAG = "FILE"
 
     fun getFileName(): String =
-        //SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-        Calendar.getInstance().get(Calendar.MILLISECOND).toString().plus(IMAGE_FILE_NAME).plus(IMAGE_FILE_EXTENSION)
+        Calendar.getInstance().get(Calendar.MILLISECOND).toString().plus("_").plus(IMAGE_FILE_NAME).plus(IMAGE_FILE_EXTENSION)
+    //Calendar.getInstance().get(Calendar.MILLISECOND).toString().plus("_").plus(
 
     @Throws(IOException::class)
     fun createImageFile(context: Context): File {
-        // Create an image file name
+        val file = getPhotoFileUri(context, getFileName())
+        currentPhotoPath = file.absolutePath
+        return file
 
-
-        val storageDir: File? = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-        return File.createTempFile(
-            IMAGE_FILE_NAME, /* prefix */
-            ".".plus(IMAGE_FILE_EXTENSION), /* suffix */
-            storageDir /* directory */
-        ).apply {
-            // Save a file: path for use with ACTION_VIEW intents
-            currentPhotoPath = absolutePath
-        }
     }
 
     fun getImagePath(context: Context, uri: Uri?): String {
         uri?.let {
-            //clearCache(context)
             currentPhotoPath = convertMediaUriToPath(context, uri)
             Log.e("URI", "path:: $currentPhotoPath")
         }
@@ -54,15 +46,13 @@ object FileHelper {
     }
 
     fun clearCache(context: Context) {
-        context.cacheDir.list()?.iterator()?.forEach {
-            context.deleteFile(it)
+        val mediaStorageDir = File(context.filesDir.absolutePath.plus(separator).plus("Pictures"))
+        Log.e("File", "FilesDir size before:: ${mediaStorageDir.list()?.size}")
+        mediaStorageDir?.list()?.iterator()?.forEach {
+            val filePath = mediaStorageDir.absolutePath.plus(separator).plus(it)
+            File(filePath).delete()
         }
-        Log.e("File", "cache size:: ${context.cacheDir.list()?.size}")
-        currentPhotoPath?.let { path ->
-            val file = File(path)
-            file?.delete()
-            Log.e("data", file.exists().toString())
-        }
+        Log.e("File", "cache size:: ${mediaStorageDir.list()?.size}")
     }
 
     @Throws(IOException::class, FileNotFoundException::class)
@@ -81,31 +71,20 @@ object FileHelper {
 
     private fun saveImage(context: Context, bitmap: Bitmap): String {
         val bytes = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, bytes)
-        val cacheDir = File(context.filesDir.absolutePath.toString())
-        // have the object build the directory structure, if needed.
-        if (!cacheDir.exists()) {
-            cacheDir.mkdirs()
-        }
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
+        val file = getPhotoFileUri(context, getFileName())
 
         try {
-
-            Log.d("heel", cacheDir.toString())
-            val f = File(
-                cacheDir, getFileName()
-            )
-            f.createNewFile()
-            val fo = FileOutputStream(f)
+            val fo = FileOutputStream(file)
             fo.write(bytes.toByteArray())
-
-            //Refreshing image on gallery
-//            MediaScannerConnection.scanFile(
-//                context, arrayOf(f.path), null
-//            ) { path, uri -> }
             fo.close()
-            Log.d("TAG", "File Saved::--->" + f.absolutePath)
+            //Refreshing image on gallery
+            MediaScannerConnection.scanFile(
+                context, arrayOf(file.path), null
+            ) { _, _ -> }
+            Log.e("FILE", "File Saved::--->" + file.absolutePath)
 
-            return f.absolutePath
+            return file.absolutePath
         } catch (e1: IOException) {
             e1.printStackTrace()
         }
@@ -122,8 +101,12 @@ object FileHelper {
     }
 
     fun getImgCachePath(context: Context, url: String): Uri? {
+        //.apply( RequestOptions().signature( ObjectKey(System.currentTimeMillis())))
         val futureTarget =
-            Glide.with(context).downloadOnly().load(url).submit(SIZE_ORIGINAL, SIZE_ORIGINAL)
+            Glide.with(context)
+                .downloadOnly()
+                .load(url)
+                .submit(SIZE_ORIGINAL, SIZE_ORIGINAL)
         try {
             val file = futureTarget.get()
             Log.e("FILE_ABS", "" + file.absolutePath)
@@ -139,39 +122,6 @@ object FileHelper {
         }
         return null
     }
-
-//    fun writePictureToGalleryLegacy(context: Context, pictureUri: Uri, pictureName: String) {
-//
-//
-//        val directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
-//
-//        val correctDir = File("${directory.absolutePath}${File.separator}WaiJuDuDisAndroid")
-//        correctDir.mkdirs()
-//
-//        val file = File("${correctDir.absolutePath}${File.separator}${pictureUri.lastPathSegment}")
-//
-//        val contentResolver = context.contentResolver
-//
-//        val outStream: OutputStream = file.outputStream()
-//        val inStream: InputStream = contentResolver.openInputStream(pictureUri)!!
-//
-//        outStream.use {out ->
-//            inStream.use { inpt ->
-//                inpt.copyTo(out)
-//            }
-//        }
-//
-//
-//        val mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.extension)
-//
-//        MediaScannerConnection.scanFile(
-//            context,
-//            arrayOf(file.absolutePath),
-//            arrayOf(mimeType?:"image/*"),
-//            null
-//        )
-//
-//    }
 
     fun downloadImage(context: Context, uri: Uri?, localDocumentPath: String?) {
         uri ?: return
@@ -206,5 +156,20 @@ object FileHelper {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    // Returns the File for a photo stored on disk given the fileName
+    fun getPhotoFileUri(context: Context, fileName: String): File {
+        // Get safe storage directory for photos
+        // Use `getExternalFilesDir` on Context to access package-specific directories.
+        // This way, we don't need to request external read/write runtime permissions.
+        val mediaStorageDir = File(context.filesDir, "Pictures")
+
+        // Create the storage directory if it does not exist
+        if (!mediaStorageDir.exists() && !mediaStorageDir.mkdirs()) {
+            Log.d(LOG_TAG, "failed to create directory")
+        }
+
+        return File(mediaStorageDir.path + separator + fileName)
     }
 }
