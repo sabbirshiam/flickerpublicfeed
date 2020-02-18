@@ -2,21 +2,17 @@ package com.example.flickerimagegallery.presentation.gallery
 
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
+import android.os.Parcelable
 import android.provider.MediaStore
 import android.util.Log
-import androidx.core.content.FileProvider
-import java.text.SimpleDateFormat
-import java.util.*
-import kotlin.collections.ArrayList
 import androidx.core.app.ActivityCompat
-import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.media.MediaScannerConnection
-import android.os.*
+import androidx.core.content.FileProvider
 import com.example.flickerimagegallery.utils.FileHelper
-import java.io.*
+import java.io.File
+import java.io.IOException
 
 fun Activity.getContentIntent(requestCode: Int) {
     val mimeTypes = arrayOf(
@@ -65,6 +61,11 @@ fun Activity.setCameraIntents(cameraIntents: MutableList<Intent>) {
                     it
                 )
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+//                MediaScannerConnection.scanFile(
+//                    this,
+//                    arrayOf(it.path),
+//                    arrayOf("image/*"),
+//                    null)
             }
         }
     }
