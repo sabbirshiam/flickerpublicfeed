@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    <external-files-path name="my_images" path="/" />
+    <files-path name="Pictures" path="." />
     <files-path
-        name="images"
-        path="/"/>
+        name="documents"
+        path="images/"/>
     <cache-path name="share" path="image_manager_disk_cache" tools:path="DiskCache.Factory.DEFAULT_DISK_CACHE_DIR" />
 </paths>
