@@ -98,6 +98,7 @@ class UploadImagePresenterImpl(
         CoroutineScope(contextPool.IO).launch {
             val isSuccess = uploadFile.uploadFile(filePath)
             withContext(contextPool.Main) {
+                view?.clearCacheFiles()
             }
         }
     }
