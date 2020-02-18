@@ -85,14 +85,15 @@ class UploadImageActivity : AppCompatActivity(), UploadImageView {
     }
 
     override fun openImageChooser() {
-        val permissions =
-            arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-
-        if (!isHasPermission(permissions))
-            askPermission(STORAGE_STORAGE_REQUEST_CODE, permissions)
-        else {
-            getContentIntent(IMAGE_CAPTURE_REQUEST_CODE)
-        }
+        getContentIntent(IMAGE_CAPTURE_REQUEST_CODE)
+//        val permissions =
+//            arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+//
+//        if (!isHasPermission(permissions))
+//            askPermission(STORAGE_STORAGE_REQUEST_CODE, permissions)
+//        else {
+//            getContentIntent(IMAGE_CAPTURE_REQUEST_CODE)
+//        }
     }
 
     override fun openImageShare(image: String?) {
@@ -104,7 +105,6 @@ class UploadImageActivity : AppCompatActivity(), UploadImageView {
                     isSuccess?.let { share(isSuccess) }
                 }
             }
-
         }
     }
 
