@@ -21,7 +21,7 @@ fun Activity.getContentIntent(requestCode: Int) {
     val intents = ArrayList<Intent>()
     intents.add(
         Intent(
-            Intent.ACTION_GET_CONTENT,
+            Intent.ACTION_OPEN_DOCUMENT,
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI
         ).apply {
             putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
@@ -60,6 +60,7 @@ fun Activity.setCameraIntents(cameraIntents: MutableList<Intent>) {
                     it
                 )
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+                takePictureIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
 //                MediaScannerConnection.scanFile(
 //                    this,
 //                    arrayOf(it.path),
