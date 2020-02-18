@@ -1,11 +1,15 @@
 package com.example.flickerimagegallery.utils
 
+import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaScannerConnection
 import android.net.Uri
+import android.os.Build
+import android.os.Environment
 import android.os.ParcelFileDescriptor
+import android.provider.MediaStore
 import android.util.Log
 import androidx.core.content.FileProvider
 import com.bumptech.glide.Glide
@@ -24,10 +28,17 @@ object FileHelper {
     const val IMAGE_FILE_DIRECTORIES = "documents"
     const val IMAGE_FILE_EXTENSION = ".jpg"
     const val LOG_TAG = "FILE"
+    const val AUTHORITY = BuildConfig.APPLICATION_ID + ".fileprovider"
 
-    fun getFileName(): String =
-        Calendar.getInstance().get(Calendar.MILLISECOND).toString().plus("_").plus(IMAGE_FILE_NAME).plus(IMAGE_FILE_EXTENSION)
+    fun getFileName(): String = IMAGE_FILE_NAME.plus(IMAGE_FILE_EXTENSION)
     //Calendar.getInstance().get(Calendar.MILLISECOND).toString().plus("_").plus(
+
+    fun getDownloadFileName(): String =
+        Calendar.getInstance()
+            .get(Calendar.MILLISECOND).toString()
+            .plus("_")
+            .plus(IMAGE_FILE_NAME)
+            .plus(IMAGE_FILE_EXTENSION)
 
     @Throws(IOException::class)
     fun createImageFile(context: Context): File {
@@ -47,12 +58,13 @@ object FileHelper {
 
     fun clearCache(context: Context) {
         val mediaStorageDir = File(context.filesDir.absolutePath.plus(separator).plus("Pictures"))
-        Log.e("File", "FilesDir size before:: ${mediaStorageDir.list()?.size}")
+        //val mediaStorageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        Log.e("File", "FilesDir size before:: ${mediaStorageDir?.list()?.size}")
         mediaStorageDir?.list()?.iterator()?.forEach {
             val filePath = mediaStorageDir.absolutePath.plus(separator).plus(it)
             File(filePath).delete()
         }
-        Log.e("File", "cache size:: ${mediaStorageDir.list()?.size}")
+        Log.e("File", "cache size:: ${mediaStorageDir?.list()?.size}")
     }
 
     @Throws(IOException::class, FileNotFoundException::class)
@@ -79,9 +91,7 @@ object FileHelper {
             fo.write(bytes.toByteArray())
             fo.close()
             //Refreshing image on gallery
-            MediaScannerConnection.scanFile(
-                context, arrayOf(file.path), null
-            ) { _, _ -> }
+            //insertIntoMediaStore(context, file)
             Log.e("FILE", "File Saved::--->" + file.absolutePath)
 
             return file.absolutePath
@@ -110,6 +120,7 @@ object FileHelper {
         try {
             val file = futureTarget.get()
             Log.e("FILE_ABS", "" + file.absolutePath)
+            //insertIntoMediaStore(context, file)
             return FileProvider.getUriForFile(
                 context,
                 BuildConfig.APPLICATION_ID + ".fileprovider",
@@ -127,6 +138,7 @@ object FileHelper {
         uri ?: return
         localDocumentPath ?: return
         try {
+            //insertIntoMediaStore
             var test = getImgCachePath(context, localDocumentPath)
             try {
 
@@ -137,18 +149,10 @@ object FileHelper {
                 outStream.use { out ->
                     inStream.use { inpt ->
                         inpt.copyTo(out)
+                        inpt.close()
                     }
+                    outStream.close()
                 }
-
-                /*val mimeType =
-                    MimeTypeMap.getSingleton().getMimeTypeFromExtension(test.lastPathSegment)
-
-                MediaScannerConnection.scanFile(
-                    context,
-                    arrayOf(uri.path),
-                    arrayOf(mimeType ?: "image/jpg"),
-                    null
-                )*/
             } catch (e: IOException) {
                 e.printStackTrace()
             }
@@ -160,16 +164,51 @@ object FileHelper {
 
     // Returns the File for a photo stored on disk given the fileName
     fun getPhotoFileUri(context: Context, fileName: String): File {
-        // Get safe storage directory for photos
-        // Use `getExternalFilesDir` on Context to access package-specific directories.
-        // This way, we don't need to request external read/write runtime permissions.
         val mediaStorageDir = File(context.filesDir, "Pictures")
+        //val mediaStorageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
 
         // Create the storage directory if it does not exist
-        if (!mediaStorageDir.exists() && !mediaStorageDir.mkdirs()) {
+        if (!mediaStorageDir?.exists()!! && !mediaStorageDir?.mkdirs()) {
             Log.d(LOG_TAG, "failed to create directory")
         }
 
         return File(mediaStorageDir.path + separator + fileName)
+    }
+    fun insertIntoMediaStore(context: Context, file: File): Uri {
+        val collection =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) MediaStore.Images.Media.getContentUri(
+                MediaStore.VOLUME_EXTERNAL
+            ) else MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+
+
+        val values = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, getFileName())
+           // put(MediaStore.Images.Media.RELATIVE_PATH, "images/images")
+            put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+          //  put(MediaStore.Images.Media.IS_PENDING, 1)
+        }
+
+        val resolver = context.contentResolver
+        val uri = resolver.insert(collection, values)
+
+        uri?.let {
+            resolver.openOutputStream(uri)?.use { outputStream ->
+                outputStream.write(file.readBytes())
+                outputStream.close()
+            }
+
+           // values.put(MediaStore.Images.Media.IS_PENDING, 0)
+            resolver.update(uri, values, null, null)
+            values.clear()
+        } ?: throw RuntimeException("MediaStore failed for some reason")
+
+        MediaScannerConnection.scanFile(
+            context,
+            arrayOf(file.absolutePath),
+            arrayOf("image/jpeg"),
+            null
+        )
+
+        return FileProvider.getUriForFile(context, AUTHORITY, file)
     }
 }
