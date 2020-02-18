@@ -1,5 +1,6 @@
 package com.example.flickerimagegallery.presentation.uploadimage
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -13,7 +14,9 @@ import com.example.flickerimagegallery.R
 import com.example.flickerimagegallery.domain.models.ImageContentModel
 import com.example.flickerimagegallery.domain.models.ImagePreviewModel
 import com.example.flickerimagegallery.domain.usecases.UploadFile
+import com.example.flickerimagegallery.presentation.gallery.askPermission
 import com.example.flickerimagegallery.presentation.gallery.getContentIntent
+import com.example.flickerimagegallery.presentation.gallery.isHasPermission
 import com.example.flickerimagegallery.presentation.uploadimage.UploadImageView.Companion.IMAGE_CAPTURE_REQUEST_CODE
 import com.example.flickerimagegallery.presentation.uploadimage.UploadImageView.Companion.REQ_CREATE_DOCUMENT
 import com.example.flickerimagegallery.presentation.uploadimage.UploadImageView.Companion.STORAGE_STORAGE_REQUEST_CODE
@@ -80,7 +83,14 @@ class UploadImageActivity : AppCompatActivity(), UploadImageView {
     }
 
     override fun openImageChooser() {
-        getContentIntent(IMAGE_CAPTURE_REQUEST_CODE)
+        val permissions =
+            arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+
+        if (!isHasPermission(permissions))
+            askPermission(STORAGE_STORAGE_REQUEST_CODE, permissions)
+        else {
+            getContentIntent(IMAGE_CAPTURE_REQUEST_CODE)
+        }
     }
 
     override fun openImageShare(image: String?) {
