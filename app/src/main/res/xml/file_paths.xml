@@ -9,5 +9,5 @@
     <files-path
         name="documents"
         path="images/"/>
-    <cache-path name="share" path="image_manager_disk_cache" tools:path="DiskCache.Factory.DEFAULT_DISK_CACHE_DIR" />
+    <!--<cache-path name="share" path="image_manager_disk_cache" tools:path="DiskCache.Factory.DEFAULT_DISK_CACHE_DIR" />-->
 </paths>

@@ -7,7 +7,6 @@ import android.graphics.BitmapFactory
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
-import android.os.Environment
 import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
 import android.util.Log
@@ -42,7 +41,7 @@ object FileHelper {
 
     @Throws(IOException::class)
     fun createImageFile(context: Context): File {
-        val file = getPhotoFileUri(context, getFileName())
+        val file = getLocalFile(context, getFileName())
         currentPhotoPath = file.absolutePath
         return file
 
@@ -84,7 +83,7 @@ object FileHelper {
     private fun saveImage(context: Context, bitmap: Bitmap): String {
         val bytes = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes)
-        val file = getPhotoFileUri(context, getFileName())
+        val file = getLocalFile(context, getFileName())
 
         try {
             val fo = FileOutputStream(file)
@@ -119,12 +118,27 @@ object FileHelper {
                 .submit(SIZE_ORIGINAL, SIZE_ORIGINAL)
         try {
             val file = futureTarget.get()
+            val localFile = getLocalFile(context, "image_1.jpg")
+            try {
+                val outStream: OutputStream = FileOutputStream(localFile)
+                val inStream: InputStream = FileInputStream(file)
+                outStream.use { out ->
+                    inStream.use { input ->
+                        input.copyTo(out)
+                        input.close()
+                    }
+                    outStream.close()
+                }
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+
             Log.e("FILE_ABS", "" + file.absolutePath)
             //insertIntoMediaStore(context, file)
             return FileProvider.getUriForFile(
                 context,
                 BuildConfig.APPLICATION_ID + ".fileprovider",
-                file
+                localFile
             )
         } catch (e: InterruptedException) {
             e.printStackTrace()
@@ -163,7 +177,7 @@ object FileHelper {
     }
 
     // Returns the File for a photo stored on disk given the fileName
-    fun getPhotoFileUri(context: Context, fileName: String): File {
+    fun getLocalFile(context: Context, fileName: String): File {
         val mediaStorageDir = File(context.filesDir, "Pictures")
         //val mediaStorageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
 
