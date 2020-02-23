@@ -6,6 +6,7 @@ import com.example.flickerimagegallery.domain.models.ImageContentModel
 import com.example.flickerimagegallery.domain.models.ImagePreviewModel
 import com.example.flickerimagegallery.domain.usecases.UploadFile
 import com.example.flickerimagegallery.presentation.uploadimage.viewlists.ImageUploadAdapter.*
+import com.example.flickerimagegallery.utils.BaseScheduler
 import com.example.flickerimagegallery.utils.CoroutineContextProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -37,6 +38,7 @@ class UploadImagePresenterImpl(
     private var view: UploadImageView? = null
 
     private var dataList = mutableListOf<DataModel>()
+    private val scheduler = BaseScheduler()
 
     override fun takeView(view: UploadImageView) {
         this.view = view
@@ -45,7 +47,12 @@ class UploadImagePresenterImpl(
     override fun initData() {
         dataList.add(ImageContentModel("First Text"))
         dataList.add(ImageContentModel("Second Text"))
-        dataList.add(ImagePreviewModel("Second Text", "https://scontent-nrt1-1.xx.fbcdn.net/v/t1.0-9/86390776_10221959335002078_6512294456627036160_o.jpg?_nc_cat=105&_nc_ohc=4W0jrMaYgxwAX8rdjCi&_nc_ht=scontent-nrt1-1.xx&oh=305e53738d680ea85f559e3dcb587256&oe=5EC94881"))
+        dataList.add(
+            ImagePreviewModel(
+                "Second Text",
+                "https://scontent-nrt1-1.xx.fbcdn.net/v/t1.0-9/86390776_10221959335002078_6512294456627036160_o.jpg?_nc_cat=105&_nc_ohc=4W0jrMaYgxwAX8rdjCi&_nc_ht=scontent-nrt1-1.xx&oh=305e53738d680ea85f559e3dcb587256&oe=5EC94881"
+            )
+        )
     }
 
     override fun dropView() {
@@ -93,18 +100,18 @@ class UploadImagePresenterImpl(
     }
 
     override fun uploadFile(filePath: String) {
-        CoroutineScope(contextPool.IO).launch {
-            val response = uploadFile.uploadFile(filePath)
-            response?.let {
+        uploadFile.uploadFile(filePath)
+            .subscribeOn(scheduler.io())
+            .observeOn(scheduler.ui())
+            .subscribe({ response ->
                 dataList.filterIsInstance<ImagePreviewModel>().first().apply {
-                    image = it.data.url
+                    image = response.data.url
+                    view?.clearCacheFiles()
+                    view?.notifyItemChanged()
                 }
-            }
-            withContext(contextPool.Main) {
-                view?.clearCacheFiles()
-                view?.notifyItemChanged()
-            }
-        }
+            }, { error->
+                error.printStackTrace()
+            })
     }
 
     private fun setImage(path: String?) {

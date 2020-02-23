@@ -4,16 +4,16 @@ import android.content.Context
 import android.util.Log
 import com.example.flickerimagegallery.GalleryApplication
 import com.example.flickerimagegallery.data.entities.FileUploadResponse
+import io.reactivex.Single
 import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
-import retrofit2.Response
 import java.io.File
 
 class FileUploadRepository(private val context: Context) {
     private val application: GalleryApplication = context as GalleryApplication
 
-    suspend fun uploadFile(path: String): Response<FileUploadResponse> {
+    fun uploadFile(path: String): Single<FileUploadResponse> {
         val file = File(path)
         Log.e("File", "Files exists..")
 
