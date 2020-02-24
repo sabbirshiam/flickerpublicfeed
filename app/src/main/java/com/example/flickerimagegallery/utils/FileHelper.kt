@@ -68,16 +68,50 @@ object FileHelper {
 
     @Throws(IOException::class, FileNotFoundException::class)
     fun getBitmapFromUri(context: Context, uri: Uri): Bitmap? {
+        val options = BitmapFactory.Options().apply {
+            inJustDecodeBounds = true
+        }
         val parcelFileDescriptor: ParcelFileDescriptor? =
             context.contentResolver.openFileDescriptor(uri, "r")
         parcelFileDescriptor?.let {
             val fileDescriptor: FileDescriptor = parcelFileDescriptor.fileDescriptor
             val image: Bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor)
+           // parcelFileDescriptor.close()
+                Log.e("IMAGE_SIZE", " bytes "+image.byteCount)
+                val scaledImage = BitmapFactory.decodeFileDescriptor(fileDescriptor, null, options).run {
+                // Decode bitmap with inSampleSize set
+                options.inJustDecodeBounds = false
+                options.inSampleSize = calculateInSampleSize(options, 200  , 200)
+                BitmapFactory.decodeFileDescriptor(fileDescriptor, null, options)
+            }
             parcelFileDescriptor.close()
-            return image
+            Log.e("IMAGE_SIZE", "scaledImage bytes " +  scaledImage.byteCount)
+            var testScaledImage = Bitmap.createScaledBitmap(image, 1280, 720, false)
+            Log.e("IMAGE_SIZE", "testScaledImage bytes " +  testScaledImage.byteCount)
+            return testScaledImage
         }
 
         return null
+    }
+
+    fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
+        // Raw height and width of image
+        val (height: Int, width: Int) = options.run { outHeight to outWidth }
+        var inSampleSize = 1
+
+        if (height > reqHeight || width > reqWidth) {
+
+            val halfHeight: Int = height / 2
+            val halfWidth: Int = width / 2
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
+                inSampleSize *= 2
+            }
+        }
+
+        return inSampleSize
     }
 
     private fun saveImage(context: Context, bitmap: Bitmap): String {
@@ -188,6 +222,7 @@ object FileHelper {
 
         return File(mediaStorageDir.path + separator + fileName)
     }
+
     fun insertIntoMediaStore(context: Context, file: File): Uri {
         val collection =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) MediaStore.Images.Media.getContentUri(
@@ -197,9 +232,9 @@ object FileHelper {
 
         val values = ContentValues().apply {
             put(MediaStore.Images.Media.DISPLAY_NAME, getFileName())
-           // put(MediaStore.Images.Media.RELATIVE_PATH, "images/images")
+            // put(MediaStore.Images.Media.RELATIVE_PATH, "images/images")
             put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-          //  put(MediaStore.Images.Media.IS_PENDING, 1)
+            //  put(MediaStore.Images.Media.IS_PENDING, 1)
         }
 
         val resolver = context.contentResolver
@@ -211,7 +246,7 @@ object FileHelper {
                 outputStream.close()
             }
 
-           // values.put(MediaStore.Images.Media.IS_PENDING, 0)
+            // values.put(MediaStore.Images.Media.IS_PENDING, 0)
             resolver.update(uri, values, null, null)
             values.clear()
         } ?: throw RuntimeException("MediaStore failed for some reason")
