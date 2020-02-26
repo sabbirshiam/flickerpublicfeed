@@ -26,6 +26,7 @@ import com.example.flickerimagegallery.presentation.uploadimage.viewlists.ImageU
 import com.example.flickerimagegallery.presentation.uploadimage.viewlists.ImageUploadAdapter.ImageContentItemViewHolder
 import com.example.flickerimagegallery.presentation.uploadimage.viewlists.ImageUploadAdapter.ImagePreviewItemViewHolder
 import com.example.flickerimagegallery.presentation.uploadimage.viewlists.ImageUploadView
+import com.example.flickerimagegallery.services.MessagingService
 import com.example.flickerimagegallery.utils.CoroutineContextProvider
 import com.example.flickerimagegallery.utils.FileHelper
 import com.example.flickerimagegallery.utils.FileHelper.getDownloadFileName
@@ -35,6 +36,7 @@ import kotlinx.android.synthetic.main.image_upload_list_preview.view.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
 interface UploadImageView {
     fun openImageChooser()
@@ -62,6 +64,9 @@ interface UploadImageView {
 class UploadImageActivity : AppCompatActivity(), UploadImageView {
 
     private lateinit var presenter: UploadImagePresenter
+
+    @Inject
+    lateinit var messagingService: MessagingService
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -269,5 +274,16 @@ class UploadImageActivity : AppCompatActivity(), UploadImageView {
 
     override fun notifyItemChanged() {
         imageUploadView.adapter?.notifyDataSetChanged()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        var contextPool = CoroutineContextProvider()
+        CoroutineScope(contextPool.IO).launch {
+            messagingService.onNewToken("testing")
+        }.invokeOnCompletion {
+            CoroutineScope(contextPool.Main).launch {
+            }
+        }
     }
 }

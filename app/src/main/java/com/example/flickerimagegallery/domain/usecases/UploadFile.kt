@@ -4,8 +4,9 @@ import android.content.Context
 import com.example.flickerimagegallery.data.entities.FileUploadResponse
 import com.example.flickerimagegallery.data.repositories.file_upload.FileUploadRepository
 import io.reactivex.Single
+import javax.inject.Inject
 
-class UploadFile(private val context: Context) {
+class UploadFile @Inject constructor(private val context: Context) {
 
     private val fileUploadRepository: FileUploadRepository = FileUploadRepository(context)
 
