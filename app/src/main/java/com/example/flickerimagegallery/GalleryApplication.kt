@@ -1,30 +1,17 @@
 package com.example.flickerimagegallery
 
 import android.app.Application
-import android.app.Service
 import com.example.flickerimagegallery.data.RetrofitClientInstance
+import com.example.flickerimagegallery.di.AppComponent
 import com.example.flickerimagegallery.di.DaggerAppComponent
 import com.example.flickerimagegallery.utils.BaseScheduler
-import com.example.flickerimagegallery.di.AppComponent
-import com.example.flickerimagegallery.services.MessagingService
 import com.google.firebase.FirebaseApp
-import com.google.firebase.iid.FirebaseInstanceId
-import com.google.firebase.messaging.FirebaseMessaging
-import dagger.android.AndroidInjector
-import dagger.android.HasServiceInjector
-import dagger.android.DispatchingAndroidInjector
-import javax.inject.Inject
 
 
-
-class GalleryApplication : Application(), HasServiceInjector {
+class GalleryApplication : Application() {
 
     private var clientInstance: RetrofitClientInstance? = null
     private var scheduler: BaseScheduler? = null
-
-
-    @set:Inject
-    lateinit var dispatchingServiceInjector: DispatchingAndroidInjector<Service>
 
     override fun onCreate() {
         super.onCreate()
@@ -58,10 +45,5 @@ class GalleryApplication : Application(), HasServiceInjector {
         fun getAppComponent(): AppComponent {
             return appComponent
         }
-    }
-
-
-    override fun serviceInjector(): AndroidInjector<Service> {
-        return dispatchingServiceInjector
     }
 }

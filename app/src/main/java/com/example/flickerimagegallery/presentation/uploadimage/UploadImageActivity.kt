@@ -11,6 +11,7 @@ import android.provider.MediaStore
 import android.view.View
 import android.widget.PopupMenu
 import androidx.appcompat.app.AppCompatActivity
+import com.example.flickerimagegallery.GalleryApplication
 import com.example.flickerimagegallery.R
 import com.example.flickerimagegallery.domain.models.ImageContentModel
 import com.example.flickerimagegallery.domain.models.ImagePreviewModel
@@ -70,6 +71,7 @@ class UploadImageActivity : AppCompatActivity(), UploadImageView {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        GalleryApplication.getAppComponent().inject(this)
         setContentView(R.layout.activity_upload_image)
         presenter = UploadImagePresenterImpl(
             UploadFile(applicationContext)
@@ -278,7 +280,7 @@ class UploadImageActivity : AppCompatActivity(), UploadImageView {
 
     override fun onResume() {
         super.onResume()
-        var contextPool = CoroutineContextProvider()
+        val contextPool = CoroutineContextProvider()
         CoroutineScope(contextPool.IO).launch {
             messagingService.onNewToken("testing")
         }.invokeOnCompletion {
