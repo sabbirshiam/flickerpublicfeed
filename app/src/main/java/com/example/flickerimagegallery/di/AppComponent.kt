@@ -3,6 +3,7 @@ package com.example.flickerimagegallery.di
 import android.app.Application
 import com.example.flickerimagegallery.GalleryApplication
 import com.example.flickerimagegallery.di.modules.*
+import com.example.flickerimagegallery.presentation.BaseActivity
 import com.example.flickerimagegallery.presentation.uploadimage.UploadImageActivity
 import com.example.flickerimagegallery.services.MessagingService
 import dagger.BindsInstance
@@ -16,10 +17,11 @@ import javax.inject.Singleton
         AppModule::class,
         ActivityModule::class,
         DomainModule::class,
-        ServiceModule::class
+        ServiceModule::class,
+        PresenterModule::class
     ]
 )
-interface AppComponent: AndroidInjector<GalleryApplication> {
+interface AppComponent : AndroidInjector<GalleryApplication> {
 
     @Component.Builder
     interface Builder {
@@ -27,6 +29,7 @@ interface AppComponent: AndroidInjector<GalleryApplication> {
         fun application(application: Application): Builder
         fun build(): AppComponent
     }
+
     fun inject(messagingService: MessagingService)
-    fun inject(uploadImageActivity: UploadImageActivity)
+    fun inject(activity: UploadImageActivity)
 }
