@@ -10,12 +10,13 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.view.View
 import android.widget.PopupMenu
-import androidx.appcompat.app.AppCompatActivity
 import com.example.flickerimagegallery.GalleryApplication
 import com.example.flickerimagegallery.R
 import com.example.flickerimagegallery.domain.models.ImageContentModel
 import com.example.flickerimagegallery.domain.models.ImagePreviewModel
 import com.example.flickerimagegallery.domain.usecases.UploadFile
+import com.example.flickerimagegallery.presentation.BaseActivity
+import com.example.flickerimagegallery.presentation.BaseView
 import com.example.flickerimagegallery.presentation.gallery.askPermission
 import com.example.flickerimagegallery.presentation.gallery.getContentIntent
 import com.example.flickerimagegallery.presentation.gallery.isHasPermission
@@ -39,7 +40,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-interface UploadImageView {
+interface UploadImageView: BaseView {
     fun openImageChooser()
     fun clearCacheFiles()
     fun onBindContentViewHolder(holder: ImageContentItemViewHolder, dataModel: ImageContentModel)
@@ -62,20 +63,18 @@ interface UploadImageView {
     }
 }
 
-class UploadImageActivity : AppCompatActivity(), UploadImageView {
-
-    private lateinit var presenter: UploadImagePresenter
+class UploadImageActivity : BaseActivity(), UploadImageView {
 
     @Inject
     lateinit var messagingService: MessagingService
 
+    @Inject
+    lateinit var presenter: UploadImagePresenter
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        GalleryApplication.getAppComponent().inject(this)
         setContentView(R.layout.activity_upload_image)
-        presenter = UploadImagePresenterImpl(
-            UploadFile(applicationContext)
-        )
+        GalleryApplication.getAppComponent().inject(this)
         imageUploadView.adapter = initImageUploadAdapter()
     }
 

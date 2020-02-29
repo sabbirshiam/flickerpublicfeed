@@ -3,21 +3,16 @@ package com.example.flickerimagegallery.presentation.gallery
 import com.example.flickerimagegallery.data.entities.Item
 import com.example.flickerimagegallery.domain.usecases.GetFlickerPublicInfo
 import com.example.flickerimagegallery.domain.usecases.UploadFile
+import com.example.flickerimagegallery.presentation.BasePresenter
 import com.example.flickerimagegallery.presentation.gallery.viewLists.GalleryItemsAdapter.*
 import com.example.flickerimagegallery.utils.CoroutineContextProvider
 import com.example.flickerimagegallery.utils.FileHelper
 import kotlinx.coroutines.*
 
 
-interface GalleryPresenter {
-    fun takeView(view: GalleryView)
-    fun dropView()
+interface GalleryPresenter: BasePresenter<GalleryView> {
     fun getGalleryItemCount(): Int
-    fun onBindGalleryItemView(
-        holder: GalleryItemViewHolder,
-        position: Int
-    )
-
+    fun onBindGalleryItemView(holder: GalleryItemViewHolder, position: Int)
     fun onReloadClick()
     fun onClickSortByPublished()
     fun onClickSortByDateTaken()

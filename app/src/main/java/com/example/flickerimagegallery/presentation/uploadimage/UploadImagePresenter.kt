@@ -5,6 +5,7 @@ import com.example.flickerimagegallery.domain.models.DataModel
 import com.example.flickerimagegallery.domain.models.ImageContentModel
 import com.example.flickerimagegallery.domain.models.ImagePreviewModel
 import com.example.flickerimagegallery.domain.usecases.UploadFile
+import com.example.flickerimagegallery.presentation.BasePresenter
 import com.example.flickerimagegallery.presentation.uploadimage.viewlists.ImageUploadAdapter.*
 import com.example.flickerimagegallery.utils.BaseScheduler
 import com.example.flickerimagegallery.utils.CoroutineContextProvider
@@ -12,9 +13,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-interface UploadImagePresenter {
-    fun takeView(view: UploadImageView)
-    fun dropView()
+interface UploadImagePresenter: BasePresenter<UploadImageView> {
     fun onClickImage(position: Int)
     fun onClickUploadImage()
     fun uploadFile(filePath: String)

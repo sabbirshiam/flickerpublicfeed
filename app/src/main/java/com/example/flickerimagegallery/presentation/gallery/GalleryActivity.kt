@@ -11,20 +11,22 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.example.flickerimagegallery.R
 import com.example.flickerimagegallery.data.entities.Item
 import com.example.flickerimagegallery.domain.usecases.GetFlickerPublicInfo
+import com.example.flickerimagegallery.presentation.BaseActivity
+import com.example.flickerimagegallery.presentation.BaseView
 import com.example.flickerimagegallery.presentation.gallery.viewLists.GalleryContentView
 import com.example.flickerimagegallery.presentation.gallery.viewLists.GalleryItemsAdapter
 import com.example.flickerimagegallery.presentation.gallery.viewLists.GalleryItemsAdapter.*
 import com.example.flickerimagegallery.presentation.uploadimage.UploadImageActivity
 import kotlinx.android.synthetic.main.activity_gallery.*
 
-interface GalleryView {
+interface GalleryView: BaseView {
     fun notifyDataSetChanged()
     fun onBindGalleryItemViewHolder(holder: GalleryItemViewHolder, model: Item)
     fun openInBrowser(model: Item)
     fun navigateToUploadImage()
 }
 
-class GalleryActivity : AppCompatActivity(), GalleryView {
+class GalleryActivity : BaseActivity(), GalleryView {
     private lateinit var presenter: GalleryPresenter
 
     override fun onCreate(savedInstanceState: Bundle?) {
