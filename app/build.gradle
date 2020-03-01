@@ -20,6 +20,8 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "API_PREFIX", "${API_PREFIX}")
         buildConfigField("String", "FILE_UPLOAD_API_PREFIX", "${FILE_UPLOAD_API_PREFIX}")
+        buildConfigField("String", "AWS_ACCESS_KEY", "${AWS_ACCESS_KEY}")
+        buildConfigField("String", "AWS_SECRET_KEY", "${AWS_SECRET_KEY}")
     }
     buildTypes {
         release {
@@ -78,4 +80,9 @@ dependencies {
 
     //firebase messaging service
     implementation 'com.google.firebase:firebase-messaging:20.1.0'
+
+    //AWS
+    implementation 'com.amazonaws:aws-android-sdk-s3:2.16.8'
+    implementation ('com.amazonaws:aws-android-sdk-mobile-client:2.16.8') { transitive = true }
+    //implementation 'com.amazonaws:aws-android-sdk-cognito:2.16.8'
 }

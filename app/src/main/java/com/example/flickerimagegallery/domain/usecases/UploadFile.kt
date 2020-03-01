@@ -2,6 +2,7 @@ package com.example.flickerimagegallery.domain.usecases
 
 import android.content.Context
 import com.example.flickerimagegallery.data.entities.FileUploadResponse
+import com.example.flickerimagegallery.data.repositories.file_upload.AwsUploadRepository
 import com.example.flickerimagegallery.data.repositories.file_upload.FileUploadRepository
 import io.reactivex.Single
 import javax.inject.Inject
@@ -9,6 +10,7 @@ import javax.inject.Inject
 class UploadFile @Inject constructor(private val context: Context) {
 
     private val fileUploadRepository: FileUploadRepository = FileUploadRepository(context)
+    private val awsUploadRepository: AwsUploadRepository = AwsUploadRepository(context)
 
     fun uploadFile(filePath: String): Single<FileUploadResponse> {
         //        if (publicFeeds.isSuccessful) {
@@ -17,6 +19,6 @@ class UploadFile @Inject constructor(private val context: Context) {
 //        } else {
 //            Log.e("File", "Uploading failed:: ${publicFeeds.body().toString()}")
 //        }
-        return fileUploadRepository.uploadFile(filePath)
+        return awsUploadRepository.uploadFile(filePath)
     }
 }

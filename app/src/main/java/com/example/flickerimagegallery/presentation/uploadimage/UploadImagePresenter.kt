@@ -105,7 +105,7 @@ class UploadImagePresenterImpl(
             .subscribe({ response ->
                 dataList.filterIsInstance<ImagePreviewModel>().first().apply {
                     image = response.data.url
-                    view?.clearCacheFiles()
+                   // view?.clearCacheFiles()
                     view?.notifyItemChanged()
                 }
             }, { error->
